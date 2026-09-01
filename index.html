@@ -1,0 +1,715 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>ExplorerApp — Kerkrade</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  :root{
+    --bg:#0f1115; --card:#171a21; --card2:#1e222b; --line:#2a2f3a;
+    --tx:#e8eaf0; --tx2:#9aa2b1; --tx3:#6b7382;
+    --acc:#ffb020; --ok:#34d399;
+    --sheet-h: 46vh;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--tx);
+    font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  #map{position:absolute;inset:0}
+  .leaflet-container{background:#0b0d11}
+  /* OSM-tegels iets ontzadigen zodat de pins eruit springen */
+  .leaflet-tile-pane{filter:saturate(.72) contrast(1.04) brightness(.98)}
+  .leaflet-control-attribution{background:#0f1115cc!important;color:var(--tx3)!important;
+    font-size:10px!important;padding:2px 6px!important}
+  .leaflet-control-attribution a{color:var(--tx2)!important}
+  .leaflet-bar a{background:#171a21!important;color:var(--tx2)!important;border-color:var(--line)!important}
+  .leaflet-bar a:hover{color:var(--tx)!important}
+
+  /* ---- top bar ---- */
+  #top{position:absolute;top:0;left:0;right:0;z-index:1150;padding:10px 10px 11px;
+    background:var(--bg);border-bottom:1px solid var(--line);pointer-events:none;
+    transition:right .28s cubic-bezier(.2,.8,.2,1)}
+  #top>*{pointer-events:auto}
+  .brand{display:flex;align-items:baseline;gap:8px;padding:2px 4px 8px}
+  .brand b{font-size:16px;letter-spacing:.2px}
+  .brand span{font-size:12px;color:var(--tx3)}
+  #chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:1px}
+  #chips::-webkit-scrollbar{display:none}
+  .chip{flex:0 0 auto;border:1px solid var(--line);background:#171a21cc;backdrop-filter:blur(8px);
+    color:var(--tx2);padding:6px 11px;border-radius:999px;font-size:13px;cursor:pointer;
+    display:flex;align-items:center;gap:6px;transition:.15s;white-space:nowrap}
+  .chip:hover{color:var(--tx);border-color:#3b4250}
+  .chip.on{color:#0f1115;font-weight:600;border-color:transparent}
+  .chip.uit{opacity:.35;text-decoration:line-through;background:#0f1115cc}
+  .chip.uit i{opacity:.5}
+  .chip i{font-style:normal;font-size:12px}
+
+  /* ---- markers ---- */
+  .pin{position:absolute;left:0;top:0;width:var(--s,44px);height:var(--s,44px);cursor:pointer;
+    transform:translate(-50%,-50%);transition:width .2s,height .2s,opacity .2s}
+  .pin.weg{opacity:0;pointer-events:none;width:0;height:0}
+  .pin .disc{position:absolute;inset:0;border-radius:50%;background-size:cover;background-position:center;
+    border:2.5px solid var(--c,#888);box-shadow:0 3px 10px #000a;background-color:#222833;
+    display:flex;align-items:center;justify-content:center;font-size:calc(var(--s,44px)*.39);transition:transform .15s;
+    color:var(--c,#ccc);font-weight:700}
+  .pin:hover .disc{transform:scale(1.12)}
+  .pin.sel{--s:52px!important}
+  .pin.sel .disc{transform:scale(1.06);border-color:var(--acc);box-shadow:0 0 0 4px #ffb02033,0 4px 14px #000b}
+  .pin .ring{position:absolute;inset:-5px;border-radius:50%;border:2px solid var(--c,#888);opacity:.55;
+    animation:pulse 2.4s ease-out infinite}
+  @keyframes pulse{0%{transform:scale(.85);opacity:.6}70%{transform:scale(1.35);opacity:0}100%{opacity:0}}
+  body.ver .pin .ring{display:none}
+
+  /* ---- cluster: een bol met een aantal, tot er nog maar één punt over is ---- */
+  .cluster{position:absolute;left:0;top:0;transform:translate(-50%,-50%);
+    width:var(--s,44px);height:var(--s,44px);border-radius:50%;cursor:pointer;
+    display:grid;place-items:center;background:#171a21f2;border:2.5px solid var(--c,#6b7382);
+    box-shadow:0 3px 12px #000a;transition:transform .15s}
+  .cluster:hover{transform:translate(-50%,-50%) scale(1.12)}
+  .cluster b{color:var(--tx);font-size:calc(var(--s,44px)*.36);line-height:1;font-weight:700}
+  .cluster i{position:absolute;inset:-4px;border-radius:50%;border:2px solid var(--c,#6b7382);
+    opacity:.28}
+  .pin .tag{position:absolute;top:calc(var(--s,44px) + 3px);left:50%;transform:translateX(-50%);white-space:nowrap;
+    font-size:11px;font-weight:600;color:var(--tx);background:#0f1115cc;padding:2px 7px;border-radius:6px;
+    border:1px solid var(--line);opacity:0;transition:.15s;pointer-events:none}
+  .pin:hover .tag,.pin.sel .tag{opacity:1}
+
+  /* ---- floating controls ---- */
+  #fabs{position:absolute;right:12px;z-index:1050;display:flex;flex-direction:column;gap:8px;
+    bottom:calc(12px + env(safe-area-inset-bottom));transition:bottom .28s cubic-bezier(.2,.8,.2,1)}
+  body.open #fabs{bottom:calc(var(--sheet-h) + 12px)}
+  .fab{width:44px;height:44px;border-radius:14px;border:1px solid var(--line);background:#171a21e8;
+    backdrop-filter:blur(8px);color:var(--tx2);font-size:18px;display:grid;place-items:center;cursor:pointer}
+  .fab:hover{color:var(--tx)}
+  .fab.on{background:var(--acc);color:#0f1115;border-color:transparent}
+
+  /* ---- bottom sheet ---- */
+  #sheet{position:absolute;left:0;right:0;bottom:0;z-index:1100;height:var(--sheet-h);
+    background:var(--card);border-top:1px solid var(--line);border-radius:18px 18px 0 0;
+    transform:translateY(101%);transition:transform .28s cubic-bezier(.2,.8,.2,1);
+    display:flex;flex-direction:column;box-shadow:0 -10px 40px #0008}
+  body.open #sheet{transform:none}
+  body.max #sheet{height:92vh}
+  #grip{padding:9px 0 5px;display:grid;place-items:center;cursor:pointer;flex:0 0 auto}
+  #grip div{width:38px;height:4px;border-radius:2px;background:#39404e}
+  #sheetScroll{overflow-y:auto;padding:0 16px calc(22px + env(safe-area-inset-bottom));flex:1}
+
+  .hero{display:flex;gap:12px;align-items:flex-start;margin-bottom:12px}
+  .hero img{width:96px;height:96px;object-fit:cover;border-radius:12px;flex:0 0 auto;background:#222833}
+  .hero .ph{width:96px;height:96px;border-radius:12px;flex:0 0 auto;background:#222833;display:grid;
+    place-items:center;color:var(--tx3);font-size:11px;text-align:center;padding:6px;line-height:1.3}
+  h1{font-size:20px;margin:0 0 3px;line-height:1.25}
+  .sub{font-size:12.5px;color:var(--tx3);margin-bottom:8px}
+  .glance{font-size:15px;color:var(--tx);margin:0}
+
+  .scores{display:flex;gap:14px;margin:12px 0;padding:11px 12px;background:var(--card2);border-radius:11px}
+  .sc{flex:1}
+  .sc b{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--tx3);
+    font-weight:700;margin-bottom:5px}
+  .bar{height:5px;border-radius:3px;background:#2a2f3a;overflow:hidden}
+  .bar i{display:block;height:100%;border-radius:3px}
+  .sc em{font-style:normal;font-size:11px;color:var(--tx2);float:right;font-weight:600}
+
+  .tabs{display:flex;gap:5px;margin:14px 0 12px;overflow-x:auto;scrollbar-width:none}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{flex:0 0 auto;padding:7px 12px;border-radius:9px;background:var(--card2);color:var(--tx2);
+    font-size:13px;cursor:pointer;border:1px solid transparent;white-space:nowrap}
+  .tab.on{background:var(--acc);color:#0f1115;font-weight:600}
+
+  .body h4{font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--tx3);margin:16px 0 6px}
+  .body p{margin:0 0 10px}
+  .note{background:var(--card2);border-left:2px solid var(--acc);padding:10px 12px;border-radius:0 9px 9px 0;
+    font-size:14px;color:var(--tx2);margin:10px 0}
+  .warn{background:#2a1f14;border-left:2px solid #f59e0b;padding:10px 12px;border-radius:0 9px 9px 0;
+    font-size:13.5px;color:#e3c08a;margin:10px 0}
+  .warn b{color:#f6c66a;display:block;font-size:10.5px;letter-spacing:.6px;text-transform:uppercase;margin-bottom:3px}
+  .cap{font-size:11.5px;color:var(--tx3);margin:-4px 0 12px}
+
+  .links a{display:flex;gap:9px;align-items:flex-start;padding:9px 11px;background:var(--card2);
+    border-radius:9px;margin-bottom:6px;color:var(--tx2);text-decoration:none;font-size:13px;line-height:1.4}
+  .links a:hover{color:var(--tx);background:#242938}
+  .links span{color:var(--tx3);flex:0 0 auto}
+
+  .conn{display:flex;flex-direction:column;gap:6px}
+  .conn button{display:flex;gap:10px;align-items:center;text-align:left;width:100%;
+    background:var(--card2);border:1px solid transparent;border-radius:10px;padding:10px 11px;
+    color:var(--tx);font:inherit;font-size:13.5px;cursor:pointer}
+  .conn button:hover{border-color:#3b4250;background:#242938}
+  .conn .dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
+  .conn .rel{color:var(--tx3);font-size:12px;display:block;margin-top:1px}
+  .conn strong{font-weight:600}
+
+  .areas{padding:2px 0 4px}
+  .area{background:var(--card2);border-radius:11px;padding:12px;margin-bottom:8px;cursor:pointer;
+    border:1px solid transparent}
+  .area:hover{border-color:#3b4250}
+  .area b{display:block;margin-bottom:2px}
+  .area span{font-size:12.5px;color:var(--tx2)}
+  .area em{font-style:normal;font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;
+    color:var(--acc);display:block;margin-top:6px}
+
+  #lodBadge{position:absolute;left:12px;z-index:1050;bottom:calc(12px + env(safe-area-inset-bottom));
+    background:#171a21e8;backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:999px;
+    padding:7px 13px;font-size:12px;color:var(--tx2);opacity:0;transition:.2s;pointer-events:none;
+    margin-left:44px}
+  #lodBadge.on{opacity:1}
+  /* ---- schaalpad, tijdlijn, thema-tegels ---- */
+  .pad{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-bottom:12px;font-size:12px}
+  .pad button{background:var(--card2);border:1px solid transparent;color:var(--tx2);
+    border-radius:7px;padding:4px 9px;font:inherit;cursor:pointer}
+  .pad button:hover{color:var(--tx);border-color:#3b4250}
+  .pad span{color:var(--tx3)}
+  .pad b{background:var(--acc);color:#0f1115;border-radius:7px;padding:4px 9px;font-weight:600}
+
+  .tl{position:relative;padding-left:18px;margin-top:4px}
+  .tl:before{content:"";position:absolute;left:4px;top:6px;bottom:6px;width:2px;background:var(--line)}
+  .tlr{position:relative;display:flex;gap:11px;align-items:baseline;padding:7px 0;cursor:pointer}
+  .tlr:hover .tln{color:var(--acc)}
+  .tlr:before{content:"";position:absolute;left:-17px;top:14px;width:8px;height:8px;border-radius:50%;
+    background:var(--c,#6b7382);border:2px solid var(--card)}
+  .tlj{flex:0 0 52px;font-variant-numeric:tabular-nums;font-weight:700;font-size:12.5px;color:var(--tx2)}
+  .tln{font-size:13.5px;color:var(--tx);line-height:1.35}
+  .tln em{font-style:normal;display:block;color:var(--tx3);font-size:12px;margin-top:1px}
+
+  .tegels{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+  .tegel{background:var(--card2);border:1px solid transparent;border-radius:11px;padding:11px;
+    cursor:pointer;text-align:left;color:var(--tx);font:inherit}
+  .tegel:hover{border-color:#3b4250;background:#242938}
+  .tegel b{display:flex;align-items:center;gap:7px;margin-bottom:4px;font-size:13.5px}
+  .tegel b i{font-style:normal}
+  .tegel span{display:block;font-size:11.5px;color:var(--tx3);line-height:1.4}
+  .tegel u{display:block;text-decoration:none;font-size:10.5px;color:var(--tx2);margin-top:6px;
+    text-transform:uppercase;letter-spacing:.5px}
+
+  .brand{cursor:pointer}
+  .brand:hover b{color:var(--acc)}
+
+  #toast{position:absolute;left:50%;bottom:80px;transform:translate(-50%,20px);z-index:1200;
+    background:#171a21f0;border:1px solid var(--line);border-radius:10px;padding:9px 14px;font-size:13px;
+    color:var(--tx2);opacity:0;transition:.25s;pointer-events:none;max-width:88vw;text-align:center}
+  #toast.on{opacity:1;transform:translate(-50%,0)}
+
+  @media(min-width:820px){
+    :root{--sheet-h:100vh}
+    #sheet{left:auto;right:0;top:0;width:420px;height:100vh;border-radius:0;
+      border-left:1px solid var(--line);border-top:none;transform:translateX(101%)}
+    body.open #sheet{transform:none}
+    body.max #sheet{height:100vh}
+    #fabs{bottom:20px}
+    body.open #fabs{bottom:20px;right:436px}
+    /* header stopt bij de zijbalk in plaats van eroverheen te lopen */
+    body.open #top{right:420px;border-right:1px solid var(--line)}
+    #sheet{padding-top:0}
+    #grip{display:none}
+    #sheetScroll{padding-top:18px}
+    #toast{bottom:28px}
+  }
+</style>
+</head>
+<body>
+<div id="map"></div>
+
+<div id="top">
+  <div class="brand"><b>ExplorerApp</b><span>Kerkrade · proefdata</span></div>
+  <div id="chips"></div>
+</div>
+
+<div id="fabs">
+  <button class="fab" id="fNet" title="Netwerk: toon alle verbindingen">◈</button>
+  <button class="fab" id="fArea" title="Verhalen over dit gebied">▤</button>
+  <button class="fab" id="fLoc" title="Mijn locatie">◎</button>
+</div>
+
+<div id="sheet">
+  <div id="grip"><div></div></div>
+  <div id="sheetScroll"></div>
+</div>
+
+<div id="lodBadge"></div>
+<div id="toast"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// data.js wordt hieronder dynamisch geladen met een cache-buster: zonder dat blijft
+// de browser na een wijziging in de data hardnekkig de oude versie tonen.
+function start(){
+const A = window.APP, T = A.themas;
+const ALL = [...A.pois, ...A.gebiedsverhalen];
+const byId = id => ALL.find(x => x.id === id);
+const img = (f,w) => f ? "https://commons.wikimedia.org/wiki/Special:FilePath/" + encodeURIComponent(f) + "?width=" + (w||800) : null;
+const kleur = o => (T[o.themas[0]] || {}).kleur || "#888";
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+/* ---------- kaart ---------- */
+window.map = null;
+const map = L.map("map", { zoomControl:false, attributionControl:false })
+  .setView(A.gebied.centrum, A.gebied.zoom);
+window.map = map;
+L.control.zoom({ position:"bottomleft" }).addTo(map);
+L.control.attribution({ position:"bottomright", prefix:false })
+  .addAttribution('&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>-bijdragers').addTo(map);
+L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19}).addTo(map);
+
+const netLayer = L.layerGroup().addTo(map);
+const markers = {};
+let actief = null, huidig = null, tab = "verhaal";  // gedeeld: selectie en tabblad
+const filterAan = {};                              // thema -> aan/uit, gevuld bij de chips
+
+A.pois.forEach(p => {
+  const el = document.createElement("div");
+  el.className = "pin";
+  el.style.setProperty("--c", kleur(p));
+  el.innerHTML =
+    (p.verhaal >= 75 ? '<div class="ring"></div>' : '') +
+    '<div class="disc"' + (p.afbeelding ? ' style="background-image:url(&quot;' + img(p.afbeelding,160) + '&quot;)"' : '') + '>' +
+      (p.afbeelding ? '' : ((T[p.themas[0]]||{}).icoon || "•")) +
+    '</div><div class="tag">' + esc(p.naam) + '</div>';
+  el.onclick = e => { e.stopPropagation(); open(p.id); };
+  const m = L.marker(p.coord, {
+    icon: L.divIcon({ html: el, className:"", iconSize:[0,0], iconAnchor:[0,0] }),
+    riseOnHover: true
+  });                       // nog niet op de kaart: hertekenen() bepaalt dat
+  markers[p.id] = { m, el, poi:p, op:false };
+});
+const clusterLaag = L.layerGroup().addTo(map);
+
+/* ---------- clusteren ----------------------------------------------------
+   Alle punten blijven bestaan; ze worden alleen samengevat. Liggen twee pins
+   op het scherm te dicht op elkaar, dan worden ze één bol met een aantal.
+   Klik je die aan, dan zoomt de kaart in tot ze uit elkaar vallen. Bij één
+   punt zie je de foto. Zo raak je nooit iets kwijt.                        */
+
+function zichtbaarVoorFilter(poi){
+  return poi.themas.some(t => filterAan[t]);
+}
+
+function hertekenen(){
+  const z = map.getZoom();
+  const maat = z < 13 ? 34 : z < 15 ? 40 : 46;
+  const straal = maat * 1.15;
+  document.body.classList.toggle("ver", z < 14);
+  clusterLaag.clearLayers();
+
+  // 1. wat mag er van het filter meedoen
+  const mee = Object.values(markers).filter(x => zichtbaarVoorFilter(x.poi));
+  Object.values(markers).forEach(x => {
+    if (!mee.includes(x) && x.op) { map.removeLayer(x.m); x.op = false; }
+  });
+
+  // 2. groeperen in schermruimte. Het geselecteerde punt zaait als eerste,
+  //    daarna het laagste niveau en de hoogste verhaalwaarde.
+  const gesorteerd = mee.slice().sort((a,b) =>
+       (a.poi.id===huidig ? -1 : b.poi.id===huidig ? 1 : 0)
+    || (a.poi.niveau||3) - (b.poi.niveau||3)
+    || b.poi.verhaal - a.poi.verhaal);
+
+  const groepen = [];
+  gesorteerd.forEach(x => {
+    const pt = map.latLngToContainerPoint(x.poi.coord);
+    const bij = groepen.find(g => Math.hypot(g.pt.x-pt.x, g.pt.y-pt.y) < straal
+                                  && g.leden[0].poi.id !== huidig);
+    if (bij) bij.leden.push(x); else groepen.push({ pt, leden:[x] });
+  });
+
+  // 3. tekenen
+  groepen.forEach(g => {
+    if (g.leden.length === 1){
+      const x = g.leden[0];
+      if (!x.op) { x.m.addTo(map); x.op = true; }
+      x.el.style.setProperty("--s", maat + "px");
+      return;
+    }
+    g.leden.forEach(x => { if (x.op) { map.removeLayer(x.m); x.op = false; } });
+
+    // kleur van het meest voorkomende thema in de groep
+    const tel = {};
+    g.leden.forEach(x => x.poi.themas.forEach(t => { if (filterAan[t]) tel[t] = (tel[t]||0)+1; }));
+    const hoofdthema = Object.keys(tel).sort((a,b) => tel[b]-tel[a])[0];
+    const grootte = Math.round(maat + Math.min(g.leden.length, 8) * 1.8);
+
+    const el = document.createElement("div");
+    el.className = "cluster";
+    el.style.setProperty("--s", grootte + "px");
+    el.style.setProperty("--c", (T[hoofdthema]||{}).kleur || "#6b7382");
+    el.innerHTML = "<i></i><b>" + g.leden.length + "</b>";
+    el.title = g.leden.map(x => x.poi.naam).join(" · ");
+
+    const mid = g.leden.reduce((a,x) => [a[0]+x.poi.coord[0], a[1]+x.poi.coord[1]], [0,0])
+                       .map(v => v / g.leden.length);
+    el.onclick = e => {
+      e.stopPropagation();
+      const b = L.latLngBounds(g.leden.map(x => x.poi.coord));
+      if (b.getNorth() === b.getSouth() && b.getEast() === b.getWest())
+        map.setView(b.getCenter(), Math.min(map.getZoom() + 3, 19));
+      else
+        map.fitBounds(b, { padding:[90,110], maxZoom:19 });
+    };
+    L.marker(mid, { icon: L.divIcon({ html: el, className:"", iconSize:[0,0], iconAnchor:[0,0] }) })
+      .addTo(clusterLaag);
+  });
+
+  const aan = mee.length, totaal = A.pois.length;
+  const badge = document.getElementById("lodBadge");
+  badge.textContent = aan < totaal ? aan + " van " + totaal + " punten" : "";
+  badge.classList.toggle("on", aan < totaal);
+}
+map.on("zoomend moveend", hertekenen);
+
+// alle punten in beeld bij het openen
+map.fitBounds(L.latLngBounds(A.pois.map(p => p.coord)), { padding:[70,90], maxZoom:16 });
+
+/* ---------- thema-filters: aan/uit, alles staat standaard aan ---------- */
+Object.keys(T).forEach(k => filterAan[k] = true);
+
+const chips = document.getElementById("chips");
+Object.entries(T).forEach(([k,t]) => {
+  const b = document.createElement("button");
+  b.className = "chip"; b.dataset.k = k;
+  b.innerHTML = '<i style="color:' + t.kleur + '">' + t.icoon + "</i>" + t.label;
+  b.onclick = () => {
+    // shift of een lange druk: alleen dit thema. Anders: dit thema aan/uit.
+    const alleenDit = Object.keys(T).every(x => x === k || !filterAan[x]);
+    if (alleenDit && filterAan[k]) Object.keys(T).forEach(x => filterAan[x] = true);
+    else filterAan[k] = !filterAan[k];
+    if (!Object.values(filterAan).some(Boolean)) Object.keys(T).forEach(x => filterAan[x] = true);
+    verf();
+  };
+  chips.appendChild(b);
+});
+
+const alles = document.createElement("button");
+alles.className = "chip"; alles.id = "chipAlles"; alles.textContent = "Alles";
+alles.onclick = () => { Object.keys(T).forEach(x => filterAan[x] = true); verf(); };
+chips.prepend(alles);   // vooraan, anders staat de reset buiten beeld op een telefoon
+
+function verf(){
+  [...chips.children].forEach(c => {
+    if (!c.dataset.k) return;
+    // rustig standaardbeeld: alles aan = neutrale chips. Alleen wie uitstaat valt op.
+    const aan = filterAan[c.dataset.k];
+    c.classList.toggle("uit", !aan);
+  });
+  const allesAan = Object.values(filterAan).every(Boolean);
+  document.getElementById("chipAlles").style.display = allesAan ? "none" : "";
+  hertekenen();
+}
+
+/* ---------- netwerk ---------- */
+let netAan = false;
+function tekenNet(focus){
+  netLayer.clearLayers();
+  const gedaan = new Set();
+  const bron = focus ? [byId(focus)] : A.pois;
+  bron.forEach(p => (p.verbindingen||[]).forEach(v => {
+    const q = byId(v.id);
+    if (!q || !q.coord || !p.coord) return;
+    const sleutel = [p.id,q.id].sort().join("|");
+    if (gedaan.has(sleutel)) return;
+    gedaan.add(sleutel);
+    if (true) L.polyline([p.coord,q.coord], {   // donkere omranding zodat de lijn leesbaar blijft
+      color:"#0f1115", weight:6, opacity:.5 }).addTo(netLayer);
+    L.polyline([p.coord,q.coord], {
+      color: focus ? "#ffb020" : kleur(p),
+      weight: focus ? 3 : 2.4,
+      opacity: focus ? .95 : .7,
+      dashArray: focus ? "7 6" : "4 6"
+    }).addTo(netLayer);
+  }));
+}
+document.getElementById("fNet").onclick = function(){
+  netAan = !netAan; this.classList.toggle("on", netAan);
+  netAan ? (tekenNet(null), toast("Netwerkweergave — verbindingen tussen alle punten")) : netLayer.clearLayers();
+};
+
+/* ---------- locatie ---------- */
+document.getElementById("fLoc").onclick = () => {
+  if (!navigator.geolocation) return toast("Geolocatie niet beschikbaar");
+  toast("Locatie zoeken…");
+  navigator.geolocation.getCurrentPosition(
+    p => {
+      const c = [p.coords.latitude, p.coords.longitude];
+      L.circleMarker(c,{radius:7,color:"#fff",weight:2,fillColor:"#3b82f6",fillOpacity:1}).addTo(map);
+      map.setView(c,16);
+      const d = map.distance(c, A.gebied.centrum);
+      toast(d > 20000 ? "Je bent " + Math.round(d/1000) + " km van Kerkrade — proefdata is lokaal" : "Gevonden");
+    },
+    () => toast("Locatie geweigerd of niet beschikbaar"));
+};
+
+/* ---------- sheet ---------- */
+const sheet = document.getElementById("sheet"), scroll = document.getElementById("sheetScroll");
+document.getElementById("grip").onclick = () => document.body.classList.toggle("max");
+map.on("click", sluit);
+
+function sluit(){
+  document.body.classList.remove("open","max");
+  Object.values(markers).forEach(x => x.el.classList.remove("sel"));
+  if (!netAan) netLayer.clearLayers(); else tekenNet(null);
+  huidig = null;
+  hertekenen();
+}
+
+function open(id, houdTab){
+  const o = byId(id); if (!o) return;
+  huidig = id; if (!houdTab) tab = "verhaal";
+  Object.values(markers).forEach(x => x.el.classList.toggle("sel", x.poi.id === id));
+  if (o.coord){
+    // het geselecteerde punt moet altijd los zichtbaar zijn, ook als het in een cluster zat
+    if (map.getZoom() < 16) map.setView(o.coord, 16, { animate:true });
+    else map.panTo(o.coord, { animate:true });
+  }
+  tekenNet(id);
+  document.body.classList.add("open");
+  hertekenen();
+  render(o);
+  scroll.scrollTop = 0;
+}
+
+function render(o){
+  const c = kleur(o), heeftPin = !!o.coord;
+  const tabs = [["verhaal","Verhaal"],["waarom","Waarom hier"],["let","Let hierop"],
+                ["verbind","Verbindingen"],["bron","Bronnen"]];
+  let h = schaalpad("kerkrade", o.naam);
+
+  h += '<div class="hero">' +
+    (o.afbeelding
+      ? '<img src="' + img(o.afbeelding,300) + '" alt="">'
+      : '<div class="ph">geen vrije<br>afbeelding</div>') +
+    '<div><h1>' + esc(o.naam) + "</h1>" +
+    '<div class="sub">' + esc(o.ondertitel||"") + (heeftPin?"":" · gebiedsverhaal") + "</div>" +
+    '<p class="glance">' + esc(o.glance) + "</p></div></div>";
+
+  if (o.bijschrift) h += '<div class="cap">' + esc(o.bijschrift) + "</div>";
+
+  h += '<div class="scores">' +
+    sc("Roem", o.roem, "#64748b") + sc("Verhaal", o.verhaal, "#ffb020") + sc("Esthetiek", o.esthetiek, c) +
+    "</div>";
+
+  if (!heeftPin) h += '<div class="note"><b>Geen pin op de kaart.</b> ' + esc(o.waarom_geen_pin) + "</div>";
+
+  h += '<div class="tabs">' + tabs.map(([k,l]) =>
+        '<div class="tab' + (tab===k?" on":"") + '" data-t="' + k + '">' + l + "</div>").join("") + "</div>";
+
+  h += '<div class="body">';
+  if (tab === "verhaal"){
+    h += "<p>" + esc(o.verhaal_tekst).replace(/\n/g,"</p><p>") + "</p>";
+    if (o.praktisch) h += "<h4>Praktisch</h4><p>" + esc(o.praktisch) + "</p>";
+  }
+  if (tab === "waarom") h += "<p>" + esc(o.waarom_hier || o.waarom_geen_pin) + "</p>";
+  if (tab === "let")    h += o.let_hierop ? '<div class="note">' + esc(o.let_hierop) + "</div>"
+                                          : "<p>Geen kijkinstructie vastgelegd.</p>";
+  if (tab === "verbind"){
+    const v = o.verbindingen||[];
+    h += v.length ? '<div class="conn">' + v.map(x => {
+      const q = byId(x.id); if (!q) return "";
+      return '<button data-go="' + x.id + '"><span class="dot" style="background:' + kleur(q) + '"></span>' +
+             "<span><strong>" + esc(q.naam) + "</strong>" +
+             '<span class="rel">' + esc(x.relatie) + "</span></span></button>";
+    }).join("") + "</div>" : "<p>Geen verbindingen vastgelegd.</p>";
+  }
+  if (tab === "bron"){
+    h += '<div class="links">' + (o.bronnen||[]).map(b =>
+      '<a href="' + b.url + '" target="_blank" rel="noopener"><span>↗</span>' + esc(b.titel) + "</a>").join("") + "</div>";
+    h += '<div class="cap" style="margin-top:10px">Elke feitelijke bewering hierboven is herleidbaar tot een van deze bronnen. Duiding staat in <em>Let hierop</em> en in de omschrijving van de verbindingen.</div>';
+  }
+  if (o.onbevestigd && (tab==="verhaal"||tab==="bron"))
+    h += '<div class="warn"><b>Onbevestigd</b>' + esc(o.onbevestigd) + "</div>";
+  h += "</div>";
+
+  // waar hoort dit object bij? doorklikken naar het thema
+  h += '<h4>Onderdeel van</h4>' + themaTegels(o.themas || []);
+
+  scroll.innerHTML = h;
+  scroll.querySelectorAll(".tab").forEach(t => t.onclick = () => { tab = t.dataset.t; render(o); });
+  scroll.querySelectorAll("[data-go]").forEach(b => b.onclick = () => open(b.dataset.go));
+  scroll.querySelectorAll("[data-thema]").forEach(b => b.onclick = () => { themaTab = "verhaal"; openThema(b.dataset.thema); });
+  scroll.querySelectorAll("[data-plaats]").forEach(b => b.onclick = () => { plaatsTab = "verhaal"; openPlaats(b.dataset.plaats); });
+}
+
+/* ---------- schaal-stapel: plaatsen en thema's -------------------------
+   Regel: een hoger niveau vat alleen samen wat lager al gesourced is.      */
+
+const plaatsById = id => A.plaatsen.find(p => p.id === id);
+const objectenVanThema = k => ALL.filter(o => (o.themas||[]).includes(k));
+
+function stapelVan(id){            // van land naar beneden tot deze plaats
+  const rij = []; let p = plaatsById(id);
+  while (p){ rij.unshift(p); p = p.ouder ? plaatsById(p.ouder) : null; }
+  return rij;
+}
+
+function tijdlijn(objecten){
+  const rij = objecten.filter(o => o.jaar).sort((a,b) => a.jaar - b.jaar);
+  if (!rij.length) return "<p>Nog geen jaartallen vastgelegd.</p>";
+  return '<div class="tl">' + rij.map(o =>
+    '<div class="tlr" data-go="' + o.id + '" style="--c:' + kleur(o) + '">' +
+      '<div class="tlj">' + (o.jaar_circa ? "ca. " : "") + o.jaar + "</div>" +
+      '<div class="tln">' + esc(o.naam) +
+        "<em>" + esc((o.ondertitel || o.glance).slice(0, 78)) + "</em></div></div>").join("") + "</div>";
+}
+
+function themaTegels(sleutels){
+  return '<div class="tegels">' + sleutels.map(k => {
+    const t = T[k]; if (!t) return "";
+    const aantal = objectenVanThema(k).length;
+    return '<button class="tegel" data-thema="' + k + '">' +
+      "<b><i style=\"color:" + t.kleur + '">' + t.icoon + "</i>" + esc(t.label) + "</b>" +
+      "<span>" + esc((t.glance||"").slice(0, 90)) + "</span>" +
+      "<u>" + aantal + " plekken \u00b7 " + (t.schaal||"stad") + "</u></button>";
+  }).join("") + "</div>";
+}
+
+function schaalpad(actiefId, extra){
+  const rij = stapelVan(actiefId);
+  let h = '<div class="pad">';
+  rij.forEach((p, i) => {
+    h += i ? "<span>\u203a</span>" : "";
+    h += (p.id === actiefId && !extra)
+      ? "<b>" + esc(p.naam) + "</b>"
+      : '<button data-plaats="' + p.id + '">' + esc(p.naam) + "</button>";
+  });
+  if (extra) h += "<span>\u203a</span><b>" + esc(extra) + "</b>";
+  return h + "</div>";
+}
+
+let plaatsTab = "verhaal", themaTab = "verhaal";
+
+function openPlaats(id){
+  const p = plaatsById(id); if (!p) return;
+  huidig = null;
+  Object.values(markers).forEach(x => x.el.classList.remove("sel"));
+  netLayer.clearLayers();
+  document.body.classList.add("open", "max");
+  const eigen = p.id === "kerkrade" ? ALL : [];   // alleen Kerkrade heeft nu objecten
+  const tabs = [["verhaal","Verhaal"],["tijdlijn","Tijdlijn"],["themas","Thema\u2019s"],["bron","Bronnen"]];
+  let h = schaalpad(p.id);
+  h += '<div class="hero">' +
+    (p.afbeelding ? '<img src="' + img(p.afbeelding,300) + '" alt="">'
+                  : '<div class="ph">' + esc(p.schaal) + "</div>") +
+    "<div><h1>" + esc(p.naam) + "</h1>" +
+    '<div class="sub">' + esc(p.ondertitel||"") + "</div>" +
+    '<p class="glance">' + esc(p.glance) + "</p></div></div>";
+  h += '<div class="tabs">' + tabs.map(([k,l]) =>
+        '<div class="tab' + (plaatsTab===k?" on":"") + '" data-pt="' + k + '">' + l + "</div>").join("") + "</div>";
+  h += '<div class="body">';
+  if (plaatsTab === "verhaal"){
+    h += "<p>" + esc(p.verhaal_tekst) + "</p>";
+    if (p.waarvoor_bekend) h += "<h4>Vooral bekend om</h4><p>" + esc(p.waarvoor_bekend) + "</p>";
+    if (p.cascade) h += '<h4>Hoe dat hier uitpakt</h4><div class="note">' + esc(p.cascade) + "</div>";
+    if (eigen.length) h += "<h4>Op de kaart</h4><p>" + A.pois.length + " plekken en " +
+        A.gebiedsverhalen.length + " gebiedsverhalen.</p>";
+  }
+  if (plaatsTab === "tijdlijn") h += tijdlijn(eigen);
+  if (plaatsTab === "themas")   h += themaTegels(p.themas||[]);
+  if (plaatsTab === "bron"){
+    h += '<div class="links">' + (p.bronnen||[]).map(b =>
+      '<a href="' + b.url + '" target="_blank" rel="noopener"><span>\u2197</span>' + esc(b.titel) + "</a>").join("") + "</div>";
+    h += '<div class="cap" style="margin-top:10px">Elk niveau is een eigen verhaal met eigen bronnen. Een streekverhaal vat de steden niet samen \u2014 het legt uit wat er speelt, en de plekken eronder laten zien hoe dat er hier uitziet.</div>';
+  }
+  if (p.onbevestigd) h += '<div class="warn"><b>Onbevestigd</b>' + esc(p.onbevestigd) + "</div>";
+  h += "</div>";
+  scroll.innerHTML = h;
+  bindKaart(() => openPlaats(id), k => { plaatsTab = k; openPlaats(id); }, "pt");
+  scroll.scrollTop = 0;
+}
+
+function openThema(k){
+  const t = T[k]; if (!t) return;
+  huidig = null;
+  Object.values(markers).forEach(x => x.el.classList.remove("sel"));
+  document.body.classList.add("open", "max");
+  const obj = objectenVanThema(k);
+  const tabs = [["verhaal","Verhaal"],["tijdlijn","Tijdlijn"],["plekken","Plekken"],
+                ["elders","Elders"],["bron","Bronnen"]];
+  let h = schaalpad("kerkrade", t.label);
+  h += "<h1>" + esc(t.label) + "</h1>" +
+       '<div class="sub">Thema op ' + esc(t.schaal||"stad") + "sniveau \u00b7 " + obj.length + " plekken</div>" +
+       '<p class="glance">' + esc(t.glance||"") + "</p>";
+  h += '<div class="tabs">' + tabs.map(([kk,l]) =>
+        '<div class="tab' + (themaTab===kk?" on":"") + '" data-tt="' + kk + '">' + l + "</div>").join("") + "</div>";
+  h += '<div class="body">';
+  if (themaTab === "verhaal") h += "<p>" + esc(t.verhaal_tekst||"Nog niet uitgewerkt.") + "</p>";
+  if (themaTab === "tijdlijn") h += tijdlijn(obj);
+  if (themaTab === "plekken"){
+    h += '<div class="conn">' + obj.map(o =>
+      '<button data-go="' + o.id + '"><span class="dot" style="background:' + kleur(o) + '"></span>' +
+      "<span><strong>" + esc(o.naam) + "</strong>" +
+      '<span class="rel">' + esc(o.coord ? (o.ondertitel||"") : "gebiedsverhaal \u2014 geen pin") +
+      "</span></span></button>").join("") + "</div>";
+  }
+  if (themaTab === "elders"){
+    const e = t.elders || [];
+    h += e.length
+      ? "<p>Dit thema houdt niet op bij de stadsgrens.</p><div class=\"conn\">" + e.map(x =>
+          '<button disabled style="cursor:default"><span class="dot" style="background:' + t.kleur + '"></span>' +
+          "<span><strong>" + esc(x.plaats) + "</strong>" +
+          '<span class="rel">' + esc(x.waarom) + "</span></span></button>").join("") +
+          '</div><div class="cap" style="margin-top:10px">Nog niet aanklikbaar: deze plaatsen zitten nog niet in de dataset. Ze staan er om te tonen waar de draad heen loopt.</div>'
+      : "<p>Voor dit thema is nog geen verband buiten Kerkrade vastgelegd.</p>";
+  }
+  if (themaTab === "bron"){
+    h += '<div class="links">' + (t.bronnen||[]).map(b =>
+      '<a href="' + b.url + '" target="_blank" rel="noopener"><span>\u2197</span>' + esc(b.titel) + "</a>").join("") + "</div>";
+  }
+  if (t.onbevestigd) h += '<div class="warn"><b>Onbevestigd</b>' + esc(t.onbevestigd) + "</div>";
+  h += "</div>";
+  scroll.innerHTML = h;
+  bindKaart(() => openThema(k), kk => { themaTab = kk; openThema(k); }, "tt");
+  scroll.scrollTop = 0;
+}
+
+function bindKaart(hertekenSelf, zetTab, tabAttr){
+  scroll.querySelectorAll("[data-" + tabAttr + "]").forEach(t =>
+    t.onclick = () => zetTab(t.dataset[tabAttr === "pt" ? "pt" : "tt"]));
+  scroll.querySelectorAll("[data-go]").forEach(b => b.onclick = () => open(b.dataset.go));
+  scroll.querySelectorAll("[data-thema]").forEach(b => b.onclick = () => { themaTab = "verhaal"; openThema(b.dataset.thema); });
+  scroll.querySelectorAll("[data-plaats]").forEach(b => b.onclick = () => { plaatsTab = "verhaal"; openPlaats(b.dataset.plaats); });
+}
+
+document.querySelector(".brand").onclick = () => { plaatsTab = "verhaal"; openPlaats("kerkrade"); };
+
+function sc(label, v, kl){
+  return '<div class="sc"><b>' + label + '<em>' + v + "</em></b>" +
+         '<div class="bar"><i style="width:' + v + "%;background:" + kl + '"></i></div></div>';
+}
+
+/* ---------- gebiedsverhalen ---------- */
+document.getElementById("fArea").onclick = () => {
+  document.body.classList.add("open","max");
+  Object.values(markers).forEach(x => x.el.classList.remove("sel"));
+  scroll.innerHTML =
+    schaalpad("kerkrade", "Gebiedsverhalen") +
+    "<h1>Verhalen over dit gebied</h1>" +
+    '<div class="sub">Objecten met te weinig te zién voor een pin — maar met een verhaal dat blijft.</div>' +
+    '<div class="areas">' + A.gebiedsverhalen.map(g =>
+      '<div class="area" data-go="' + g.id + '"><b>' + esc(g.naam) + "</b>" +
+      "<span>" + esc(g.glance) + "</span>" +
+      "<em>esthetiek " + g.esthetiek + " · verhaal " + g.verhaal + "</em></div>").join("") + "</div>" +
+    '<div class="cap">De routeringsregel: esthetiek bepaalt niet óf iets interessant is, maar op welk niveau het verschijnt.</div>';
+  scroll.querySelectorAll("[data-go]").forEach(b => b.onclick = () => open(b.dataset.go));
+  scroll.querySelectorAll("[data-plaats]").forEach(b => b.onclick = () => { plaatsTab = "verhaal"; openPlaats(b.dataset.plaats); });
+  scroll.scrollTop = 0;
+};
+
+/* ---------- toast ---------- */
+let tt;
+function toast(m){
+  const t = document.getElementById("toast");
+  t.textContent = m; t.classList.add("on");
+  clearTimeout(tt); tt = setTimeout(() => t.classList.remove("on"), 2600);
+}
+
+verf();   // eerste tekenbeurt: filters staan aan, dan clusteren
+
+setTimeout(() => toast("Tik op een punt. " + A.pois.length + " objecten, " + A.gebiedsverhalen.length + " gebiedsverhalen."), 700);
+} // einde start()
+
+const _d = document.createElement("script");
+_d.src = "data.js?v=" + Date.now();
+_d.onload = start;
+_d.onerror = () => document.body.insertAdjacentHTML("beforeend",
+  '<div style="position:fixed;inset:0;display:grid;place-items:center;background:#0f1115;color:#e8eaf0;padding:24px;text-align:center">data.js kon niet geladen worden.<br>Draai de app via <code>python tools/serve.py</code>, niet door het bestand te openen.</div>');
+document.head.appendChild(_d);
+</script>
+</body>
+</html>

@@ -191,6 +191,29 @@
   .brand{cursor:pointer}
   .brand:hover b{color:var(--acc)}
 
+  /* ---- de graaf: alle verbindingen tegelijk, levend ---- */
+  #graaf{position:absolute;inset:0;z-index:1300;background:#0b0d11f2;backdrop-filter:blur(3px);
+    display:none}
+  body.graaf #graaf{display:block}
+  #graaf svg{width:100%;height:100%;touch-action:none;cursor:grab}
+  #graaf svg:active{cursor:grabbing}
+  .gk{stroke:#3b4250;stroke-width:1.1;opacity:.5}
+  .gk.sterk{stroke-width:1.9;opacity:.75}
+  .gn{cursor:pointer}
+  .gn circle{stroke:#0b0d11;stroke-width:2;transition:r .18s}
+  .gn:hover circle{stroke:#fff}
+  .gn text{fill:var(--tx2);font-size:9.5px;text-anchor:middle;pointer-events:none;
+    paint-order:stroke;stroke:#0b0d11;stroke-width:3px;stroke-linejoin:round}
+  .gn.hub text{fill:var(--tx);font-size:11.5px;font-weight:700}
+  .gn.flauw{opacity:.22}
+  #graafKop{position:absolute;top:0;left:0;right:0;z-index:2;padding:12px 14px;
+    background:linear-gradient(#0b0d11ee 60%,#0b0d1100);pointer-events:none}
+  #graafKop b{font-size:15px;color:var(--tx)}
+  #graafKop span{display:block;font-size:12px;color:var(--tx3);margin-top:2px}
+  #graafDicht{position:absolute;top:10px;right:12px;z-index:3;width:38px;height:38px;
+    border-radius:12px;background:#171a21e8;border:1px solid var(--line);color:var(--tx2);
+    font-size:18px;cursor:pointer}
+
   #toast{position:absolute;left:50%;bottom:80px;transform:translate(-50%,20px);z-index:1200;
     background:#171a21f0;border:1px solid var(--line);border-radius:10px;padding:9px 14px;font-size:13px;
     color:var(--tx2);opacity:0;transition:.25s;pointer-events:none;max-width:88vw;text-align:center}
@@ -222,7 +245,7 @@
 </div>
 
 <div id="fabs">
-  <button class="fab" id="fNet" title="Netwerk: toon alle verbindingen">◈</button>
+  <button class="fab" id="fNet" title="Verbindingen. Houd ingedrukt voor het hele netwerk.">◈</button>
   <button class="fab" id="fArea" title="Verhalen over dit gebied">▤</button>
   <button class="fab" id="fLoc" title="Mijn locatie">◎</button>
 </div>
@@ -232,6 +255,10 @@
   <div id="sheetScroll"></div>
 </div>
 
+<div id="graaf">
+  <div id="graafKop"><b>Het netwerk</b><span>Plekken, verhalen en thema’s. Tik een bol.</span></div>
+  <button id="graafDicht">×</button>
+</div>
 <div id="lodBadge"></div>
 <div id="toast"></div>
 
@@ -452,10 +479,19 @@ function tekenNet(focus){
     }).addTo(netLayer);
   }));
 }
-document.getElementById("fNet").onclick = function(){
+// korte tik: verbindingen op de kaart. Lange druk of dubbeltik: de volledige graaf.
+const fNet = document.getElementById("fNet");
+fNet.onclick = function(){
   netAan = !netAan; this.classList.toggle("on", netAan);
-  netAan ? (tekenNet(null), toast("Netwerkweergave — verbindingen tussen alle punten")) : netLayer.clearLayers();
+  netAan ? (tekenNet(null), toast("Verbindingen op de kaart — houd ingedrukt voor het hele netwerk"))
+         : netLayer.clearLayers();
 };
+let drukTimer = null;
+const startDruk = () => { drukTimer = setTimeout(() => { drukTimer = null; openGraaf(); }, 480); };
+const stopDruk  = () => { if (drukTimer) { clearTimeout(drukTimer); drukTimer = null; } };
+fNet.addEventListener("pointerdown", startDruk);
+["pointerup","pointerleave","pointercancel"].forEach(e => fNet.addEventListener(e, stopDruk));
+fNet.ondblclick = openGraaf;
 
 /* ---------- locatie ---------- */
 document.getElementById("fLoc").onclick = () => {
@@ -633,8 +669,14 @@ function openPlaats(id){
     h += verrijk(p.verhaal_tekst);
     if (p.waarvoor_bekend) h += "<h4>Vooral bekend om</h4><p>" + esc(p.waarvoor_bekend) + "</p>";
     if (p.cascade) h += '<h4>Hoe dat hier uitpakt</h4><div class="note">' + esc(p.cascade) + "</div>";
-    if (eigen.length) h += "<h4>Op de kaart</h4><p>" + A.pois.length + " plekken en " +
-        A.gebiedsverhalen.length + " gebiedsverhalen.</p>";
+    if (p.themas && p.themas.length){
+      h += '<h4>Verder lezen \u2014 de verhalen van deze stad</h4>';
+      h += '<div class="cap" style="margin-top:-2px">Hierboven staat het korte antwoord. De echte verhalen zitten in de thema\u2019s.</div>';
+      h += themaTegels(p.themas);
+    }
+    if (eigen.length) h += '<h4>Op de kaart</h4><p>' + A.pois.length + " plekken, en " +
+        A.gebiedsverhalen.length + ' verhalen die niet aan \u00e9\u00e9n plek hangen. ' +
+        '<a class="lnk" data-graaf="1">Bekijk het netwerk</a>.</p>';
   }
   if (plaatsTab === "tijdlijn") h += tijdlijn(eigen);
   if (plaatsTab === "themas")   h += themaTegels(p.themas||[]);
@@ -647,6 +689,7 @@ function openPlaats(id){
   h += "</div>";
   scroll.innerHTML = h;
   bindKaart(() => openPlaats(id), k => { plaatsTab = k; openPlaats(id); }, "pt");
+  scroll.querySelectorAll("[data-graaf]").forEach(a => a.onclick = openGraaf);
   scroll.scrollTop = 0;
 }
 
@@ -717,7 +760,7 @@ document.getElementById("fArea").onclick = () => {
   Object.values(markers).forEach(x => x.el.classList.remove("sel"));
   scroll.innerHTML =
     schaalpad("kerkrade", "Gebiedsverhalen") +
-    "<h1>Verhalen over dit gebied</h1>" +
+    "<h1>Verhalen</h1>" +
     '<div class="sub">Objecten met te weinig te zién voor een pin — maar met een verhaal dat blijft.</div>' +
     '<div class="areas">' + A.gebiedsverhalen.map(g =>
       '<div class="area" data-go="' + g.id + '"><b>' + esc(g.naam) + "</b>" +
@@ -728,6 +771,121 @@ document.getElementById("fArea").onclick = () => {
   scroll.querySelectorAll("[data-plaats]").forEach(b => b.onclick = () => { plaatsTab = "verhaal"; openPlaats(b.dataset.plaats); });
   scroll.scrollTop = 0;
 };
+
+/* ---------- de graaf ------------------------------------------------------
+   Een eenvoudige krachtensimulatie: knopen duwen elkaar weg, verbindingen
+   trekken ze naar elkaar toe, en alles zwiept naar het midden. Genoeg om het
+   web te laten zien zonder een bibliotheek erbij te halen.                  */
+const graafEl = document.getElementById("graaf");
+let sim = null;
+
+function bouwGraaf(){
+  const NS = "http://www.w3.org/2000/svg";
+  graafEl.querySelectorAll("svg").forEach(e => e.remove());
+  const svg = document.createElementNS(NS, "svg");
+  graafEl.appendChild(svg);
+  const B = graafEl.getBoundingClientRect();
+  const W = B.width, H = B.height;
+
+  // knopen: thema's zijn hubs, objecten hangen eraan
+  const knopen = [], index = {};
+  const voegToe = (id, naam, kl, r, hub) => {
+    const n = { id, naam, kl, r, hub,
+      x: W/2 + (Math.random()-.5)*W*.7, y: H/2 + (Math.random()-.5)*H*.7, vx:0, vy:0 };
+    index[id] = n; knopen.push(n); return n;
+  };
+  Object.entries(T).forEach(([k,th]) => voegToe(k, th.label, th.kleur, 15, true));
+  ALL.forEach(o => voegToe(o.id, o.naam, kleur(o), 5 + (o.verhaal/100)*7, false));
+
+  const kanten = [];
+  ALL.forEach(o => {
+    (o.themas||[]).forEach(k => index[k] && kanten.push({ a:index[o.id], b:index[k], sterk:false }));
+    (o.verbindingen||[]).forEach(v => index[v.id] &&
+      kanten.push({ a:index[o.id], b:index[v.id], sterk:true }));
+  });
+
+  // tekenen
+  const lijnen = kanten.map(k => {
+    const l = document.createElementNS(NS, "line");
+    l.setAttribute("class", "gk" + (k.sterk ? " sterk" : ""));
+    svg.appendChild(l); return l;
+  });
+  const groepen = knopen.map(n => {
+    const g = document.createElementNS(NS, "g");
+    g.setAttribute("class", "gn" + (n.hub ? " hub" : ""));
+    const c = document.createElementNS(NS, "circle");
+    c.setAttribute("r", n.r); c.setAttribute("fill", n.kl);
+    const tx = document.createElementNS(NS, "text");
+    tx.setAttribute("dy", n.r + 11);
+    tx.textContent = n.naam.length > 22 ? n.naam.slice(0,21) + "\u2026" : n.naam;
+    g.append(c, tx);
+    g.onclick = () => {
+      sluitGraaf();
+      if (T[n.id]) { themaTab = "verhaal"; openThema(n.id); } else open(n.id);
+    };
+    g.onmouseenter = () => {
+      const buren = new Set([n.id]);
+      kanten.forEach(k => { if (k.a===n) buren.add(k.b.id); if (k.b===n) buren.add(k.a.id); });
+      groepen.forEach((gg,i) => gg.classList.toggle("flauw", !buren.has(knopen[i].id)));
+    };
+    g.onmouseleave = () => groepen.forEach(gg => gg.classList.remove("flauw"));
+    svg.appendChild(g); return g;
+  });
+
+  let stap = 0;
+  function tik(){
+    stap++;
+    const koeling = Math.max(0.02, 1 - stap/220);
+    for (let i=0;i<knopen.length;i++){
+      const a = knopen[i];
+      for (let j=i+1;j<knopen.length;j++){
+        const b = knopen[j];
+        let dx = b.x-a.x, dy = b.y-a.y, d2 = dx*dx+dy*dy || 0.01;
+        const d = Math.sqrt(d2);
+        const duw = (a.hub||b.hub ? 5200 : 2300) / d2;
+        const ux = dx/d, uy = dy/d;
+        a.vx -= ux*duw; a.vy -= uy*duw; b.vx += ux*duw; b.vy += uy*duw;
+      }
+      // naar het midden
+      a.vx += (W/2 - a.x) * 0.0016;
+      a.vy += (H/2 - a.y) * 0.0016;
+    }
+    kanten.forEach(k => {
+      const dx = k.b.x-k.a.x, dy = k.b.y-k.a.y;
+      const d = Math.hypot(dx,dy) || 0.01;
+      const rust = k.sterk ? 78 : 96;
+      const f = (d - rust) * 0.012;
+      const ux = dx/d, uy = dy/d;
+      k.a.vx += ux*f; k.a.vy += uy*f; k.b.vx -= ux*f; k.b.vy -= uy*f;
+    });
+    knopen.forEach((n,i) => {
+      n.vx *= 0.82; n.vy *= 0.82;
+      n.x += n.vx * koeling; n.y += n.vy * koeling;
+      const m = n.r + (n.hub ? 54 : 46);
+      n.x = Math.max(m, Math.min(W-m, n.x));
+      n.y = Math.max(n.r + 52, Math.min(H - n.r - 26, n.y));
+      groepen[i].setAttribute("transform", "translate(" + n.x.toFixed(1) + "," + n.y.toFixed(1) + ")");
+    });
+    lijnen.forEach((l,i) => {
+      const k = kanten[i];
+      l.setAttribute("x1", k.a.x); l.setAttribute("y1", k.a.y);
+      l.setAttribute("x2", k.b.x); l.setAttribute("y2", k.b.y);
+    });
+    if (stap < 400) sim = requestAnimationFrame(tik); else sim = null;
+  }
+  tik();
+}
+
+function openGraaf(){
+  document.body.classList.remove("open","max");
+  document.body.classList.add("graaf");
+  bouwGraaf();
+}
+function sluitGraaf(){
+  document.body.classList.remove("graaf");
+  if (sim) { cancelAnimationFrame(sim); sim = null; }
+}
+document.getElementById("graafDicht").onclick = sluitGraaf;
 
 /* ---------- toast ---------- */
 let tt;

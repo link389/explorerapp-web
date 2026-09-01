@@ -126,6 +126,12 @@
   .warn b{color:#f6c66a;display:block;font-size:10.5px;letter-spacing:.6px;text-transform:uppercase;margin-bottom:3px}
   .cap{font-size:11.5px;color:var(--tx3);margin:-4px 0 12px}
 
+  /* inline verwijzing naar een ander object, thema of niveau */
+  .lnk{color:#7dd3fc;cursor:pointer;text-decoration:underline;
+    text-decoration-color:#7dd3fc66;text-underline-offset:2.5px;text-decoration-thickness:1px}
+  .lnk:hover{color:#bae6fd;text-decoration-color:#bae6fd}
+  .lnk.plek:after{content:"\2009\25c9";font-size:.72em;vertical-align:.12em;opacity:.75}
+
   .links a{display:flex;gap:9px;align-items:flex-start;padding:9px 11px;background:var(--card2);
     border-radius:9px;margin-bottom:6px;color:var(--tx2);text-decoration:none;font-size:13px;line-height:1.4}
   .links a:hover{color:var(--tx);background:#242938}
@@ -239,6 +245,29 @@ const ALL = [...A.pois, ...A.gebiedsverhalen];
 const byId = id => ALL.find(x => x.id === id);
 const img = (f,w) => f ? "https://commons.wikimedia.org/wiki/Special:FilePath/" + encodeURIComponent(f) + "?width=" + (w||800) : null;
 const kleur = o => (T[o.themas[0]] || {}).kleur || "#888";
+// [[id]] of [[id|tekst]] wordt een klikbare verwijzing. Bij een object met
+// een co\u00f6rdinaat springt de kaart mee \u2014 dat is de deeplink naar de plek.
+function verrijk(txt){
+  return "<p>" + esc(txt).split("\n\n").join("</p><p>")
+    .replace(/\[\[([a-z0-9-]+)(?:\|([^\]]*))?\]\]/g, (_, id, label) => {
+      const o = byId(id), th = T[id], pl = A.plaatsen.find(p => p.id === id);
+      const doel = o || th || pl;
+      if (!doel) return label || id;
+      const naam = label || doel.naam || doel.label || id;
+      const plek = o && o.coord ? " plek" : "";
+      return '<a class="lnk' + plek + '" data-link="' + id + '">' + naam + "</a>";
+    }) + "</p>";
+}
+
+function bindLinks(){
+  scroll.querySelectorAll("[data-link]").forEach(a => a.onclick = () => {
+    const id = a.dataset.link;
+    if (T[id])                              { themaTab = "verhaal"; openThema(id); }
+    else if (A.plaatsen.some(p => p.id===id)){ plaatsTab = "verhaal"; openPlaats(id); }
+    else                                     open(id);
+  });
+}
+
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
 /* ---------- kaart ---------- */
@@ -499,10 +528,10 @@ function render(o){
 
   h += '<div class="body">';
   if (tab === "verhaal"){
-    h += "<p>" + esc(o.verhaal_tekst).split("\n\n").join("</p><p>") + "</p>";
+    h += verrijk(o.verhaal_tekst);
     if (o.praktisch) h += "<h4>Praktisch</h4><p>" + esc(o.praktisch) + "</p>";
   }
-  if (tab === "waarom") h += "<p>" + esc(o.waarom_hier || o.waarom_geen_pin) + "</p>";
+  if (tab === "waarom") h += verrijk(o.waarom_hier || o.waarom_geen_pin);
   if (tab === "let")    h += o.let_hierop ? '<div class="note">' + esc(o.let_hierop) + "</div>"
                                           : "<p>Geen kijkinstructie vastgelegd.</p>";
   if (tab === "verbind"){
@@ -531,6 +560,7 @@ function render(o){
   scroll.querySelectorAll("[data-go]").forEach(b => b.onclick = () => open(b.dataset.go));
   scroll.querySelectorAll("[data-thema]").forEach(b => b.onclick = () => { themaTab = "verhaal"; openThema(b.dataset.thema); });
   scroll.querySelectorAll("[data-plaats]").forEach(b => b.onclick = () => { plaatsTab = "verhaal"; openPlaats(b.dataset.plaats); });
+  bindLinks();
 }
 
 /* ---------- schaal-stapel: plaatsen en thema's -------------------------
@@ -600,7 +630,7 @@ function openPlaats(id){
         '<div class="tab' + (plaatsTab===k?" on":"") + '" data-pt="' + k + '">' + l + "</div>").join("") + "</div>";
   h += '<div class="body">';
   if (plaatsTab === "verhaal"){
-    h += "<p>" + esc(p.verhaal_tekst).split("\n\n").join("</p><p>") + "</p>";
+    h += verrijk(p.verhaal_tekst);
     if (p.waarvoor_bekend) h += "<h4>Vooral bekend om</h4><p>" + esc(p.waarvoor_bekend) + "</p>";
     if (p.cascade) h += '<h4>Hoe dat hier uitpakt</h4><div class="note">' + esc(p.cascade) + "</div>";
     if (eigen.length) h += "<h4>Op de kaart</h4><p>" + A.pois.length + " plekken en " +
@@ -635,7 +665,7 @@ function openThema(k){
   h += '<div class="tabs">' + tabs.map(([kk,l]) =>
         '<div class="tab' + (themaTab===kk?" on":"") + '" data-tt="' + kk + '">' + l + "</div>").join("") + "</div>";
   h += '<div class="body">';
-  if (themaTab === "verhaal") h += "<p>" + esc(t.verhaal_tekst||"Nog niet uitgewerkt.").split("\n\n").join("</p><p>") + "</p>";
+  if (themaTab === "verhaal") h += verrijk(t.verhaal_tekst || "Nog niet uitgewerkt.");
   if (themaTab === "tijdlijn") h += tijdlijn(obj);
   if (themaTab === "plekken"){
     h += '<div class="conn">' + obj.map(o =>
@@ -671,6 +701,7 @@ function bindKaart(hertekenSelf, zetTab, tabAttr){
   scroll.querySelectorAll("[data-go]").forEach(b => b.onclick = () => open(b.dataset.go));
   scroll.querySelectorAll("[data-thema]").forEach(b => b.onclick = () => { themaTab = "verhaal"; openThema(b.dataset.thema); });
   scroll.querySelectorAll("[data-plaats]").forEach(b => b.onclick = () => { plaatsTab = "verhaal"; openPlaats(b.dataset.plaats); });
+  bindLinks();
 }
 
 document.querySelector(".brand").onclick = () => { plaatsTab = "verhaal"; openPlaats("kerkrade"); };

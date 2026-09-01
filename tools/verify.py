@@ -165,6 +165,12 @@ def controleer(o, is_gebied, offline):
         if w in tekst:
             meld(WAARSCHUWING, i, "R9", f"verdachte formulering: '{w}' — bron of schrappen")
 
+    # R13 — inline verwijzingen [[id]] moeten bestaan
+    for veld in ("verhaal_tekst", "waarom_hier", "waarom_geen_pin", "let_hierop", "glance"):
+        for doel in re.findall(r"\[\[([a-z0-9-]+)", str(o.get(veld) or "")):
+            if doel not in ALLE_IDS:
+                meld(FOUT, i, "R13", f"verwijzing [[{doel}]] in '{veld}' wijst nergens heen")
+
     if offline:
         return
 
@@ -223,7 +229,9 @@ if __name__ == "__main__":
 
     APP = laad()
     pois, gebieden = APP["pois"], APP["gebiedsverhalen"]
-    ALLE_IDS = {o["id"] for o in pois + gebieden}
+    ALLE_IDS = ({o["id"] for o in pois + gebieden}
+                | {p["id"] for p in APP.get("plaatsen", [])}
+                | set(APP.get("themas", {}).keys()))
 
     doel = [(o, False) for o in pois] + [(o, True) for o in gebieden]
     if args:

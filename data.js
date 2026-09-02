@@ -119,6 +119,9 @@ window.APP = {
     },
     {
       id: "mijnstreek", schaal: "streek", naam: "Oostelijke Mijnstreek", ouder: "limburg",
+      // `kaart` is een weergave-instelling (waar de kaart heen zoomt bij focus
+      // op deze plaats), geen inhoudelijke claim \u2014 daarom zonder bronveld.
+      kaart: { centrum: [50.90, 5.99], zoom: 11 },
       ondertitel: "Heerlen \u00b7 Kerkrade \u00b7 Landgraaf \u00b7 Brunssum \u00b7 Beekdaelen \u00b7 Voerendaal \u00b7 Simpelveld",
       afbeelding: null,
       jaar: 1900,
@@ -134,6 +137,7 @@ window.APP = {
     },
     {
       id: "limburg", schaal: "provincie", naam: "Limburg", ouder: "nederland",
+      kaart: { centrum: [51.21, 5.93], zoom: 9 },
       ondertitel: "Provincie",
       afbeelding: null,
       glance: "Nog niet uitgewerkt.",
@@ -145,6 +149,7 @@ window.APP = {
     },
     {
       id: "nederland", schaal: "land", naam: "Nederland", ouder: null,
+      kaart: { centrum: [52.2, 5.3], zoom: 7 },
       ondertitel: "Land",
       afbeelding: null,
       glance: "Nog niet uitgewerkt.",

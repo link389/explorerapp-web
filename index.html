@@ -214,6 +214,48 @@
     border-radius:12px;background:#171a21e8;border:1px solid var(--line);color:var(--tx2);
     font-size:18px;cursor:pointer}
 
+  /* ---- de verkenner: het startscherm, en later de zoeker ----------------
+     Dit ligt bóven de kaart. De kaart ingezoomd op een plaats is geen
+     startpunt maar een focusmodus: het gevolg van een keuze hier.         */
+  #zoek{position:absolute;inset:0;z-index:1400;background:#0b0d11f2;backdrop-filter:blur(4px);
+    display:none;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  body.zoek #zoek{display:block}
+  #zoekX{position:fixed;top:10px;right:12px;z-index:2;width:38px;height:38px;border-radius:12px;
+    background:#171a21e8;border:1px solid var(--line);color:var(--tx2);font-size:18px;cursor:pointer}
+  #zoekX:hover{color:var(--tx)}
+  .zkKader{max-width:560px;margin:0 auto;padding:8vh 18px calc(34px + env(safe-area-inset-bottom))}
+  .zkBrand b{font-size:26px;letter-spacing:.2px}
+  .zkBrand span{display:block;color:var(--tx2);margin:6px 0 18px;font-size:14px;line-height:1.5}
+  .zkVeld{display:flex;align-items:center;gap:9px;background:var(--card);border:1px solid var(--line);
+    border-radius:13px;padding:3px 14px;margin-bottom:6px}
+  .zkVeld:focus-within{border-color:var(--acc)}
+  .zkVeld:before{content:"\2315";color:var(--tx3);font-size:18px}
+  #zoekVeld{flex:1;background:none;border:none;outline:none;color:var(--tx);font:inherit;
+    font-size:16px;padding:11px 0;min-width:0}
+  #zoekVeld::placeholder{color:var(--tx3)}
+  .zkKop{font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--tx3);margin:20px 0 7px}
+  .zkRij{display:flex;gap:11px;align-items:center;width:100%;text-align:left;background:var(--card);
+    border:1px solid transparent;border-radius:11px;padding:11px 13px;margin-bottom:6px;cursor:pointer;
+    color:var(--tx);font:inherit}
+  .zkRij:hover{border-color:#3b4250;background:#20242e}
+  .zkRij .dot{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+  .zkRij i{font-style:normal;flex:0 0 auto;font-size:16px;width:18px;text-align:center}
+  .zkRij .zkTx{flex:1;min-width:0}
+  .zkRij b{display:block;font-size:14.5px;font-weight:600}
+  .zkRij .zkSub{display:block;font-size:12.5px;color:var(--tx3);line-height:1.4}
+  .zkRij em{font-style:normal;margin-left:auto;flex:0 0 auto;font-size:10.5px;color:var(--tx3);
+    text-transform:uppercase;letter-spacing:.5px;padding-left:8px}
+  .zkLeeg{color:var(--tx3);font-size:14px;padding:16px 4px}
+  .zkVoet{margin-top:24px;text-align:center}
+  .zkVoet button{background:none;border:1px solid var(--line);color:var(--tx2);border-radius:999px;
+    padding:9px 18px;font:inherit;font-size:13.5px;cursor:pointer}
+  .zkVoet button:hover{color:var(--tx);border-color:#3b4250}
+
+  #zoekKnop{margin-left:auto;align-self:center;width:30px;height:30px;border-radius:9px;
+    border:1px solid var(--line);background:#171a21cc;color:var(--tx2);font-size:15px;
+    cursor:pointer;display:grid;place-items:center;flex:0 0 auto}
+  #zoekKnop:hover{color:var(--tx);border-color:#3b4250}
+
   #toast{position:absolute;left:50%;bottom:80px;transform:translate(-50%,20px);z-index:1200;
     background:#171a21f0;border:1px solid var(--line);border-radius:10px;padding:9px 14px;font-size:13px;
     color:var(--tx2);opacity:0;transition:.25s;pointer-events:none;max-width:88vw;text-align:center}
@@ -240,7 +282,8 @@
 <div id="map"></div>
 
 <div id="top">
-  <div class="brand"><b>ExplorerApp</b><span>Kerkrade · proefdata</span></div>
+  <div class="brand"><b>ExplorerApp</b><span>Kerkrade · proefdata</span>
+    <button id="zoekKnop" title="Zoeken — plaats, thema of plek">&#8981;</button></div>
   <div id="chips"></div>
 </div>
 
@@ -253,6 +296,17 @@
 <div id="sheet">
   <div id="grip"><div></div></div>
   <div id="sheetScroll"></div>
+</div>
+
+<div id="zoek">
+  <button id="zoekX" title="Naar de kaart">×</button>
+  <div class="zkKader">
+    <div class="zkBrand"><b>ExplorerApp</b>
+      <span>Zoek een plaats, een thema of een plek. De kaart volgt je keuze.</span></div>
+    <div class="zkVeld"><input id="zoekVeld" type="search" autocomplete="off" spellcheck="false"
+      placeholder="Zoek: stad, streek, thema, plek&hellip;"></div>
+    <div id="zoekUit"></div>
+  </div>
 </div>
 
 <div id="graaf">
@@ -289,8 +343,8 @@ function verrijk(txt){
 function bindLinks(){
   scroll.querySelectorAll("[data-link]").forEach(a => a.onclick = () => {
     const id = a.dataset.link;
-    if (T[id])                              { themaTab = "verhaal"; openThema(id); }
-    else if (A.plaatsen.some(p => p.id===id)){ plaatsTab = "verhaal"; openPlaats(id); }
+    if (T[id])                               focusThema(id);
+    else if (A.plaatsen.some(p => p.id===id)) focusPlaats(id);
     else                                     open(id);
   });
 }
@@ -418,8 +472,9 @@ function hertekenen(){
 }
 map.on("zoomend moveend", hertekenen);
 
-// alle punten in beeld bij het openen
-map.fitBounds(L.latLngBounds(A.pois.map(p => p.coord)), { padding:[70,90], maxZoom:16 });
+// startbeeld: uitgezoomd op de streek, achter de verkenner. Inzoomen op een
+// plaats is geen beginstand maar een focusmodus — het gevolg van een keuze.
+map.setView([50.89, 5.99], 11);
 
 /* ---------- thema-filters: aan/uit, alles staat standaard aan ---------- */
 Object.keys(T).forEach(k => filterAan[k] = true);
@@ -594,8 +649,8 @@ function render(o){
   scroll.innerHTML = h;
   scroll.querySelectorAll(".tab").forEach(t => t.onclick = () => { tab = t.dataset.t; render(o); });
   scroll.querySelectorAll("[data-go]").forEach(b => b.onclick = () => open(b.dataset.go));
-  scroll.querySelectorAll("[data-thema]").forEach(b => b.onclick = () => { themaTab = "verhaal"; openThema(b.dataset.thema); });
-  scroll.querySelectorAll("[data-plaats]").forEach(b => b.onclick = () => { plaatsTab = "verhaal"; openPlaats(b.dataset.plaats); });
+  scroll.querySelectorAll("[data-thema]").forEach(b => b.onclick = () => focusThema(b.dataset.thema));
+  scroll.querySelectorAll("[data-plaats]").forEach(b => b.onclick = () => focusPlaats(b.dataset.plaats));
   bindLinks();
 }
 
@@ -742,12 +797,13 @@ function bindKaart(hertekenSelf, zetTab, tabAttr){
   scroll.querySelectorAll("[data-" + tabAttr + "]").forEach(t =>
     t.onclick = () => zetTab(t.dataset[tabAttr === "pt" ? "pt" : "tt"]));
   scroll.querySelectorAll("[data-go]").forEach(b => b.onclick = () => open(b.dataset.go));
-  scroll.querySelectorAll("[data-thema]").forEach(b => b.onclick = () => { themaTab = "verhaal"; openThema(b.dataset.thema); });
-  scroll.querySelectorAll("[data-plaats]").forEach(b => b.onclick = () => { plaatsTab = "verhaal"; openPlaats(b.dataset.plaats); });
+  scroll.querySelectorAll("[data-thema]").forEach(b => b.onclick = () => focusThema(b.dataset.thema));
+  scroll.querySelectorAll("[data-plaats]").forEach(b => b.onclick = () => focusPlaats(b.dataset.plaats));
   bindLinks();
 }
 
-document.querySelector(".brand").onclick = () => { plaatsTab = "verhaal"; openPlaats("kerkrade"); };
+// linksboven is voortaan de weg terug naar het begin: de verkenner
+document.querySelector(".brand").onclick = () => openZoek();
 
 function sc(label, v, kl){
   return '<div class="sc"><b>' + label + '<em>' + v + "</em></b>" +
@@ -768,9 +824,161 @@ document.getElementById("fArea").onclick = () => {
       "<em>esthetiek " + g.esthetiek + " · verhaal " + g.verhaal + "</em></div>").join("") + "</div>" +
     '<div class="cap">De routeringsregel: esthetiek bepaalt niet óf iets interessant is, maar op welk niveau het verschijnt.</div>';
   scroll.querySelectorAll("[data-go]").forEach(b => b.onclick = () => open(b.dataset.go));
-  scroll.querySelectorAll("[data-plaats]").forEach(b => b.onclick = () => { plaatsTab = "verhaal"; openPlaats(b.dataset.plaats); });
+  scroll.querySelectorAll("[data-plaats]").forEach(b => b.onclick = () => focusPlaats(b.dataset.plaats));
   scroll.scrollTop = 0;
 };
+
+/* ---------- de verkenner ---------------------------------------------------
+   Het startscherm, en daarna de zoeker. Er zijn twee momenten om te verkennen:
+   vooraf (thuis of in het hotel) en ter plekke. Dit scherm bedient het eerste:
+   je begint niet op een kaart maar bij een vraag — welke plaats, welk thema,
+   welke plek? De kaart ingezoomd op wat je koos is de fócusmodus die volgt. */
+
+const norm = s => String(s).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+// focus: de kaart springt naar wat je koos, daarna opent het bijbehorende verhaal
+function focusPlaats(id){
+  const p = plaatsById(id); if (!p) return;
+  const eigen = p.id === "kerkrade" ? A.pois : [];   // alleen Kerkrade heeft nu objecten
+  if (eigen.length)
+    map.fitBounds(L.latLngBounds(eigen.map(o => o.coord)), { padding:[70,90], maxZoom:16 });
+  else if (p.kaart)
+    map.setView(p.kaart.centrum, p.kaart.zoom);
+  plaatsTab = "verhaal"; openPlaats(id);
+}
+function focusThema(k){
+  const met = objectenVanThema(k).filter(o => o.coord);
+  if (met.length)
+    map.fitBounds(L.latLngBounds(met.map(o => o.coord)), { padding:[70,90], maxZoom:16 });
+  themaTab = "verhaal"; openThema(k);
+}
+
+// de zoekindex: alles wat een naam heeft, over vier soorten
+const zoekIndex = [];
+A.plaatsen.forEach(p => zoekIndex.push({
+  soort:"plaats", id:p.id, naam:p.naam, sub:p.ondertitel || p.schaal, em:p.schaal,
+  tekst: norm([p.naam, p.ondertitel, p.glance, p.waarvoor_bekend].join(" ")) }));
+Object.entries(T).forEach(([k,t]) => zoekIndex.push({
+  soort:"thema", id:k, naam:t.label, sub:t.glance, icoon:t.icoon, kleur:t.kleur,
+  tekst: norm([t.label, t.glance].join(" ")) }));
+A.pois.forEach(p => zoekIndex.push({
+  soort:"plek", id:p.id, naam:p.naam, sub:p.ondertitel || p.glance, kleur:kleur(p),
+  tekst: norm([p.naam, p.ondertitel, p.glance,
+               p.themas.map(k => (T[k]||{}).label).join(" ")].join(" ")) }));
+A.gebiedsverhalen.forEach(g => zoekIndex.push({
+  soort:"verhaal", id:g.id, naam:g.naam, sub:g.ondertitel || g.glance, kleur:kleur(g),
+  tekst: norm([g.naam, g.ondertitel, g.glance,
+               g.themas.map(k => (T[k]||{}).label).join(" ")].join(" ")) }));
+
+const zoekEl = document.getElementById("zoek"),
+      veld   = document.getElementById("zoekVeld"),
+      uit    = document.getElementById("zoekUit");
+
+function zkRij(r){
+  return '<button class="zkRij" data-soort="' + r.soort + '" data-kies="' + r.id + '">' +
+    (r.icoon ? '<i style="color:' + r.kleur + '">' + r.icoon + "</i>"
+             : '<span class="dot" style="background:' + (r.kleur || "#6b7382") + '"></span>') +
+    '<span class="zkTx"><b>' + esc(r.naam) + '</b><span class="zkSub">' + esc(r.sub || "") + "</span></span>" +
+    (r.em ? "<em>" + esc(r.em) + "</em>" : "") + "</button>";
+}
+
+// zonder zoekterm: de beginpunten. De schaalstapel bovenaan, dan de thema's.
+function startInhoud(){
+  let h = '<div class="zkKop">Begin bij een plaats</div>';
+  h += A.plaatsen.map(p => {
+    const gevuld = p.id === "kerkrade";
+    const em = gevuld ? A.pois.length + " plekken" :
+               (p.verhaal_tekst && !p.onbevestigd) ? p.schaal + "verhaal" : "nog leeg";
+    return zkRij({ soort:"plaats", id:p.id, naam:p.naam,
+      sub: p.ondertitel || "", em, kleur: gevuld ? "#ffb020" : "#3b4250" });
+  }).join("");
+  h += '<div class="zkKop">Of begin bij een thema</div>' + themaTegels(Object.keys(T));
+  h += '<div class="zkVoet"><button id="zoekVrij">Of verken vrij op de kaart &rarr;</button></div>';
+  return h;
+}
+
+function zoekResultaten(qq){
+  const tokens = qq.split(/\s+/).filter(Boolean);
+  const scoor = r => {
+    let s = 0;
+    const n = norm(r.naam);
+    for (const t of tokens){
+      if (n.startsWith(t)) s += 4;
+      else if (n.split(/[\s\/–-]+/).some(w => w.startsWith(t))) s += 3;
+      else if (n.includes(t)) s += 2;
+      else if (r.sub && norm(r.sub).includes(t)) s += 1.2;
+      else if (r.tekst.includes(t)) s += 0.6;
+      else return 0;                      // elk woord moet ergens raken
+    }
+    return s;
+  };
+  const raak = zoekIndex.map(r => [scoor(r), r]).filter(x => x[0] > 0)
+    .sort((a,b) => b[0] - a[0]);
+  if (!raak.length)
+    return '<div class="zkLeeg">Niets gevonden voor “' + esc(qq) + '”. ' +
+           'De proefdata beslaat alleen Kerkrade — zoek op een plek, een thema of een plaats daar.</div>';
+  // groepen op volgorde van hun beste treffer, zodat het sterkste antwoord bovenaan staat
+  const soorten = [["plaats","Plaatsen"],["thema","Thema’s"],
+                   ["plek","Plekken op de kaart"],["verhaal","Verhalen zonder pin"]];
+  return soorten
+    .map(([s, kop]) => ({ kop, rijen: raak.filter(x => x[1].soort === s) }))
+    .filter(g => g.rijen.length)
+    .sort((a,b) => b.rijen[0][0] - a.rijen[0][0])
+    .map(g => '<div class="zkKop">' + g.kop + "</div>" + g.rijen.map(x => zkRij(x[1])).join(""))
+    .join("");
+}
+
+function renderZoek(q){
+  const qq = norm(q.trim());
+  uit.innerHTML = qq ? zoekResultaten(qq) : startInhoud();
+  uit.querySelectorAll("[data-kies]").forEach(b =>
+    b.onclick = () => kiesUitZoek(b.dataset.soort, b.dataset.kies));
+  uit.querySelectorAll("[data-thema]").forEach(b =>
+    b.onclick = () => kiesUitZoek("thema", b.dataset.thema));
+  const vrij = uit.querySelector("#zoekVrij");
+  if (vrij) vrij.onclick = () => {
+    sluitZoek();
+    map.fitBounds(L.latLngBounds(A.pois.map(p => p.coord)), { padding:[70,90], maxZoom:16 });
+  };
+}
+
+function kiesUitZoek(soort, id){
+  sluitZoek(true);
+  if (soort === "plaats") return focusPlaats(id);
+  if (soort === "thema")  return focusThema(id);
+  const o = byId(id);
+  if (o && !o.coord)      // gebiedsverhaal: geen pin, dus de stad als decor
+    map.fitBounds(L.latLngBounds(A.pois.map(p => p.coord)), { padding:[70,90], maxZoom:16 });
+  open(id);
+}
+
+function openZoek(){
+  document.body.classList.remove("open", "max", "graaf");
+  document.body.classList.add("zoek");
+  veld.value = "";
+  renderZoek("");
+  zoekEl.scrollTop = 0;
+  // alleen op een groot scherm meteen het toetsenbord in het veld zetten
+  if (matchMedia("(min-width:820px)").matches) setTimeout(() => veld.focus(), 60);
+}
+let zoekTip = true;
+function sluitZoek(stil){
+  document.body.classList.remove("zoek");
+  if (zoekTip && !stil){
+    zoekTip = false;
+    toast("Tik op een punt — of zoek opnieuw via ⌕ linksboven.");
+  }
+}
+
+veld.addEventListener("input", () => renderZoek(veld.value));
+veld.addEventListener("keydown", e => {
+  if (e.key === "Enter"){ const b = uit.querySelector(".zkRij"); if (b) b.click(); }
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && document.body.classList.contains("zoek")) sluitZoek();
+});
+document.getElementById("zoekX").onclick = () => sluitZoek();
+document.getElementById("zoekKnop").onclick = openZoek;
 
 /* ---------- de graaf ------------------------------------------------------
    Een eenvoudige krachtensimulatie: knopen duwen elkaar weg, verbindingen
@@ -895,9 +1103,8 @@ function toast(m){
   clearTimeout(tt); tt = setTimeout(() => t.classList.remove("on"), 2600);
 }
 
-verf();   // eerste tekenbeurt: filters staan aan, dan clusteren
-
-setTimeout(() => toast("Tik op een punt. " + A.pois.length + " objecten, " + A.gebiedsverhalen.length + " gebiedsverhalen."), 700);
+verf();     // eerste tekenbeurt: filters staan aan, dan clusteren
+openZoek(); // de verkenner is het startscherm; de kaart is wat je daarna krijgt
 } // einde start()
 
 const _d = document.createElement("script");

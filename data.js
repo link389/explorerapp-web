@@ -106,15 +106,48 @@ window.APP = {
       id: "kerkrade", schaal: "stad", naam: "Kerkrade", ouder: "mijnstreek",
       ondertitel: "Stad in Zuid-Limburg \u00b7 aan de Duitse grens",
       afbeelding: "Kerkrade-Markt.jpg",
-      glance: "Een grensstad die begon als ontginning bij een klooster, de oudste steenkoolmijn van Nederland herbergde, en die nu elke vier jaar de blaasmuziekwereld ontvangt.",
-      verhaal_tekst: "Begin niet bij de mijnen. Begin duizend jaar eerder, toen op de zuidhellingen van het Anstelerdal [[romeins-kerkrade|Romeinse boerderijen]] stonden. L\u00f6ssgrond, water in de buurt, zon op de helling. Wie hier wilde wonen koos die kant \u2014 en dat is daarna elke eeuw opnieuw gebeurd.\n\nRond 1100 werd het bos daarboven gerooid. Zulk vrijgemaakt land heette simpelweg rode.\n\nIn 1104 staan er twee dingen in die open plek: een klooster en [[burg-rode|een burcht]]. Allebei heten ze Rode. Daar komt bijna alles vandaan. De nederzetting bij de burcht werd \u2019s-Hertogenrode, en dus Herzogenrath. Die bij [[lambertuskerk|de parochiekerk]] werd Kerk-rade. Het klooster ging in het Frans door als Rode-le-Duc, wat afsleet tot [[rolduc|Rolduc]]. Drie namen, \u00e9\u00e9n bos.\n\nNegen jaar later schrijft iemand in de boekhouding van dat klooster \u00e9\u00e9n woord: kalculen. Kolenkuilen. Het is de oudste bekende vermelding van steenkoolwinning in Europa, en ze staat hier. Wat erop volgt is [[mijnbouw|achthonderd jaar mijnbouw]], en dat is op 29 augustus 1969 voorbij.\n\nDaarna verdwijnt het bijna spoorloos. [[schacht-nulland|\u00c9\u00e9n schachtgebouw]] bleef staan. En op de Markt een bronzen mijnwerker, [[joep|d\u2019r Joep]], die zijn naam pas kreeg op de dag dat hij werd onthuld.\n\nDwars door dat alles loopt sinds 1815 [[grens|een landsgrens]] \u2014 op \u00e9\u00e9n plek letterlijk door het midden van [[nieuwstraat|een gewone straat]].",
-      waarvoor_bekend: "De oudste steenkoolmijn van Nederland, de abdij Rolduc, het Wereld Muziek Concours, en de Nieuwstraat waar de landsgrens door het midden loopt.",
+      glance: "Grensstad in Zuid-Limburg met ruim 45.000 inwoners \u2014 bakermat van de Nederlandse mijnbouw, thuisbasis van het Wereld Muziek Concours, en van GaiaZOO tot stoomtrein een stad van dagjes uit.",
+      verhaal_tekst: "Kerkrade ligt in het uiterste zuidoosten van Nederland, tegen de Duitse grens. Het is een stad van ruim 45.000 inwoners die met het Duitse Herzogenrath \u00e9\u00e9n gegroeid stedelijk gebied vormt \u2014 op \u00e9\u00e9n plek loopt de landsgrens zelfs door het midden van [[nieuwstraat|een gewone straat]], met Nederland op de ene stoep en Duitsland op de andere.\n\nDe stad dankt haar naam aan een middeleeuwse ontginning. Rond 1100 werd hier bos gerooid \u2014 zulk vrijgemaakt land heette rode \u2014 en in 1104 stichtte Ailbertus van Antoing er een klooster: [[rolduc|de abdij Rolduc]], nu het grootste abdijcomplex van Nederland. De nederzetting bij [[lambertuskerk|de parochiekerk]] ging Kerk-rade heten; uit dezelfde ontginning komen ook Herzogenrath en de naam Rolduc voort \u2014 [[drie-rodes|drie namen uit \u00e9\u00e9n bos]]. In de abdijregisters staat in 1113 het woord kalculen, kolenkuilen: de oudste bekende vermelding van steenkoolwinning in Europa.\n\nSteenkool bepaalde daarna eeuwenlang het leven hier. [[domaniale|De Domaniale mijn]], de oudste van Nederland, sloot op 29 augustus 1969, en van die hele wereld is bovengronds weinig bewaard: [[schacht-nulland|\u00e9\u00e9n schachtgebouw]], twee begroeide [[steenberg-ham|steenbergen]] en op de Markt [[joep|d\u2019r Joep]], het nationale monument voor alle Nederlandse mijnwerkers.\n\nHet Kerkrade van nu laat zich van een andere kant zien. Sinds 1951 is de stad om de vier jaar gastheer van [[wmc|het Wereld Muziek Concours]], en met GaiaZOO (2005), het Discovery Museum en de stoomtrein van de Miljoenenlijn kwamen er na de mijnsluiting nieuwe publiekstrekkers bij. Aan de noordrand ligt bovendien [[anstelvallei|een groen beekdal]] met een kasteel, watermolens en een stuwmeer.",
+      waarvoor_bekend: "De abdij Rolduc, de oudste steenkoolmijn van Nederland, het Wereld Muziek Concours en de Nieuwstraat, waar de landsgrens door het midden van de straat loopt. Voor een dagje uit: GaiaZOO en het Discovery Museum.",
+      /* Het tabblad Doen: de bezoekbare plekken. `link` verwijst naar een object
+         in deze dataset; `url` is de offici\u00eble site van een plek die (nog) geen
+         eigen pin heeft. Elke claim hieronder is herleidbaar tot de bronnen. */
+      doen: [
+        { naam: "GaiaZOO", url: "https://www.gaiazoo.nl/",
+          tekst: "Dierentuin uit 2005 met vier landschappen \u2014 savanne, regenwoud, taiga en Limburg \u2014 en meermaals verkozen tot mooiste dierentuin van de Benelux." },
+        { naam: "Discovery Museum", url: "https://www.discoverymuseum.nl/",
+          tekst: "Museum over wetenschap en techniek, naast station Kerkrade Centrum. Opende in 1998 als Industrion en heet sinds 2021 Discovery Museum." },
+        { naam: "Abdij Rolduc", link: "rolduc",
+          tekst: "Het grootste abdijcomplex van Nederland, gesticht in 1104. De romaanse crypte uit 1108 is er nog; een deel van het complex is hotel." },
+        { naam: "De Miljoenenlijn", url: "https://miljoenenlijn.nl/",
+          tekst: "Historische stoomtrein tussen Kerkrade Centrum en Schin op Geul, over een lijn uit 1934 die zijn naam dankt aan de bouwkosten: ruim twaalf miljoen gulden voor twaalfenhalve kilometer." },
+        { naam: "Botanische Tuin Kerkrade", url: "https://botatuin.nl/",
+          tekst: "Tuin uit 1939, aangelegd in opdracht van de Staatsmijnen als groene aanvulling op het mijnwerkersbestaan. De enige botanische tuin van Nederland waarvan de aanleg als rijksmonument beschermd is." },
+        { naam: "Schacht Nulland", link: "schacht-nulland",
+          tekst: "Het laatste schachtgebouw van de oudste steenkoolmijn van Nederland, nu een klein museum over de mijnbouw." },
+        { naam: "Nieuwstraat / Neustra\u00dfe", link: "nieuwstraat",
+          tekst: "De straat waar de landsgrens door het midden loopt \u2014 met \u00e9\u00e9n stap sta je in Duitsland." },
+        { naam: "Wandelen in de Anstelvallei", link: "anstelvallei",
+          tekst: "Het groene beekdal van de stad, met kasteel Erenstein, twee watermolens en het stuwmeer de Cranenweyer." },
+        { naam: "Wereld Muziek Concours", link: "wmc",
+          tekst: "Elke vier jaar wekenlang blaasmuziek uit de hele wereld; de twintigste editie liep in de zomer van 2026." },
+        { naam: "Roda JC \u2014 Parkstad Limburg Stadion", url: "https://www.rodajckerkrade.nl/",
+          tekst: "Betaald voetbal in een stadion uit 2000. Voorloper Rapid JC werd in 1956 landskampioen van Nederland; fusieclub Roda JC speelt sinds 1962." }
+      ],
       themas: ["mijnbouw", "grens", "rolduc", "romeins", "muziek", "water"],
       bronnen: [
         { titel: "Abdij Rolduc \u2014 Wikipedia (NL)", url: "https://nl.wikipedia.org/wiki/Abdij_Rolduc" },
         { titel: "Domaniale mijn \u2014 Wikipedia (NL)", url: "https://nl.wikipedia.org/wiki/Domaniale_mijn" },
         { titel: "Burg Rode \u2014 Wikipedia (NL)", url: "https://nl.wikipedia.org/wiki/Burg_Rode" },
-        { titel: "Nieuwstraat (Kerkrade) \u2014 Wikipedia (NL)", url: "https://nl.wikipedia.org/wiki/Nieuwstraat_(Kerkrade)" }
+        { titel: "Nieuwstraat (Kerkrade) \u2014 Wikipedia (NL)", url: "https://nl.wikipedia.org/wiki/Nieuwstraat_(Kerkrade)" },
+        { titel: "Wereld Muziek Concours \u2014 Wikipedia (NL)", url: "https://nl.wikipedia.org/wiki/Wereld_Muziek_Concours" },
+        { titel: "GaiaZOO \u2014 Wikipedia (EN)", url: "https://en.wikipedia.org/wiki/GaiaZOO" },
+        { titel: "Discovery Museum \u2014 Wikipedia (NL)", url: "https://nl.wikipedia.org/wiki/Discovery_Center_Continium" },
+        { titel: "Spoorlijn Schaesberg\u2013Simpelveld (Miljoenenlijn) \u2014 Wikipedia (NL)", url: "https://nl.wikipedia.org/wiki/Spoorlijn_Schaesberg_-_Simpelveld" },
+        { titel: "Botanische Tuin \u2014 Rijksmonumenten.nl (513741)", url: "https://rijksmonumenten.nl/monument/513741/botanische-tuin/kerkrade/" },
+        { titel: "Rapid JC \u2014 Wikipedia (NL)", url: "https://nl.wikipedia.org/wiki/Rapid_JC" },
+        { titel: "Parkstad Limburg Stadion \u2014 Wikipedia (EN)", url: "https://en.wikipedia.org/wiki/Parkstad_Limburg_Stadion" },
+        { titel: "Gemeente Kerkrade in cijfers \u2014 AlleCijfers.nl", url: "https://allecijfers.nl/gemeente/kerkrade/" }
       ]
     },
     {
@@ -336,7 +369,7 @@ window.APP = {
       bijschrift: "De Cranenweyer.",
       glance: "Het stuwmeer bovenin het dal \u2014 water dat hier wordt vastgehouden in plaats van doorgelaten.",
       waarom_hier: "Bovenin een beekdal met verval is een stuwmeer de logische plek: het vangt piekafvoer op en houdt het dal beneden beheersbaar.",
-      verhaal_tekst: "Dit is bewust een dunne kaart. De geraadpleegde open bronnen geven van de Cranenweyer weinig meer dan de ligging en het type. Wat je er wel bij mag denken \u2014 en dat is duiding, geen feit \u2014 is dat waterbeheer in dit dal een doorlopend thema is. Molenaars stuwden water op om hun rad te laten draaien; een stuwmeer houdt het tegen om benedenstrooms droge voeten te houden. Zelfde water, tegengestelde bedoeling, zeshonderd jaar ertussen.",
+      verhaal_tekst: "De Cranenweyer is een stuwmeer bovenin het Anstelerdal. Aanlegjaar en beheerder zijn in de geraadpleegde bronnen niet vastgelegd, maar wat je hier ziet is de omkering die dit dal heeft doorgemaakt. Eeuwenlang werd het water van de Anstelerbeek juist opgestuwd om te w\u00e9rken: de Brugmolen en de Hammolen draaiden erop, van omstreeks 1400 tot in de twintigste eeuw. Het stuwmeer doet het omgekeerde \u2014 het houdt water tegen om het dal benedenstrooms beheersbaar te houden. Dezelfde beek, tegengestelde bedoeling. Wie eerst bij de Brugmolen kijkt en dan hier, ziet twee antwoorden op \u00e9\u00e9n vraag: wat doe je met water dat van een helling komt?",
       let_hierop: "Vergelijk de waterstand hier met de Anstelerbeek verderop in het dal.",
       onbevestigd: "Aanlegjaar, beheerder en de precieze functie zijn niet geverifieerd en daarom weggelaten.",
       verbindingen: [
@@ -362,7 +395,7 @@ window.APP = {
       bijschrift: "De grote zaal.",
       glance: "Een volwaardig theater in een stad van vijfenveertigduizend inwoners.",
       waarom_hier: "Kerkrade heeft voor zijn omvang veel zaalcapaciteit. Dat hangt samen met het Wereld Muziek Concours, dat hier sinds 1951 elke vier jaar duizenden muzikanten naartoe brengt.",
-      verhaal_tekst: "Het theater opende in 1978, negen jaar na de sluiting van de laatste mijn. Die twee gebeurtenissen naast elkaar leggen is verleidelijk, maar de bronnen leggen dat verband niet, dus doen wij het ook niet. Wat wel vaststaat is de uitkomst: een stad die haar economische bestaansgrond verloor, houdt een culturele infrastructuur over die groter is dan haar inwonertal doet vermoeden. Het theater, de Rodahal en de Markt met d\u2019r Joep liggen binnen vijf minuten lopen van elkaar.",
+      verhaal_tekst: "Het theater opende in 1978, negen jaar na de sluiting van de laatste Kerkraadse mijn. Voor een stad van dit formaat is de culturele infrastructuur opvallend ruim: een volwaardig theater, de Rodahal en de Markt met d\u2019r Joep liggen binnen vijf minuten lopen van elkaar. De verklaring die w\u00e9l vaststaat is de muziek: het Wereld Muziek Concours brengt sinds 1951 elke vier jaar duizenden muzikanten en honderdduizenden bezoekers naar de stad, en dat vraagt om podia en zalen.",
       let_hierop: "Loop van hier naar de Markt en tel de zalen die je passeert. Voor vijfenveertigduizend inwoners is dat veel.",
       onbevestigd: "Een direct verband tussen de mijnsluiting en de bouw van dit theater is in de geraadpleegde bronnen niet vastgesteld.",
       verbindingen: [
@@ -575,8 +608,8 @@ window.APP = {
       bijschrift: "Kasteel Erenstein aan het water.",
       glance: "Een kasteel in het dal van de Anstel, aangewezen als rijksmonument.",
       waarom_hier: "Het kasteel ligt in de Anstelvallei, aan het water — de plek waar in dit landschap eeuwenlang macht en molens samenkwamen.",
-      verhaal_tekst: "Dit is bewust een dúnne kaart. In de open bronnen die voor deze proef zijn geraadpleegd staat van Erenstein weinig meer dan de monumentstatus en de ligging. Een rijke tekst zou hier verzonnen moeten worden, en dat is precies wat deze app niet doet. Zo ziet een object eruit waarvan de bron nog niet is opgehaald: hij staat op de kaart, hij is eerlijk, en hij is nog niet af.",
-      let_hierop: "Vergelijk deze kaart met die van Rolduc of de Nieuwstraat. Dat verschil is geen kwaliteitsverschil in het object — het is een verschil in beschikbare bron.",
+      verhaal_tekst: "Aan het water van de Anstelerbeek staat kasteel Erenstein, beschermd als rijksmonument. De geraadpleegde open bronnen geven over het kasteel zelf weinig prijs — de monumentstatus en de ligging, meer niet — maar die ligging valt wel te lezen. Dit is hetzelfde dal waar in de Romeinse tijd boerderijen op de hellingen stonden en waar later twee watermolens op de beek draaiden. Wie hier een kasteel neerzette, koos een plek die al vele eeuwen eerder als goede grond was ontdekt: water, beschutting en vruchtbare hellingen binnen handbereik.",
+      let_hierop: "Kijk naar wat het kasteel omringt: de beek, de hoeves Nieuw Erenstein en Klarenanstel, de hellingen. Het dal verklaart de plek.",
       onbevestigd: "Huidige functie, bouwgeschiedenis en eigenaren zijn niet geverifieerd en daarom weggelaten.",
       verbindingen: [
         { id: "anstelvallei", relatie: "het dal waarin het ligt" },

@@ -145,6 +145,11 @@
   .conn .dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
   .conn .rel{color:var(--tx3);font-size:12px;display:block;margin-top:1px}
   .conn strong{font-weight:600}
+  .conn a{display:flex;gap:10px;align-items:center;text-align:left;width:100%;
+    background:var(--card2);border:1px solid transparent;border-radius:10px;padding:10px 11px;
+    color:var(--tx);font-size:13.5px;text-decoration:none;line-height:1.45}
+  .conn a:hover{border-color:#3b4250;background:#242938}
+  .conn .ext{margin-left:auto;color:var(--tx3);flex:0 0 auto;padding-left:6px}
 
   .areas{padding:2px 0 4px}
   .area{background:var(--card2);border-radius:11px;padding:12px;margin-bottom:8px;cursor:pointer;
@@ -709,7 +714,9 @@ function openPlaats(id){
   netLayer.clearLayers();
   document.body.classList.add("open", "max");
   const eigen = p.id === "kerkrade" ? ALL : [];   // alleen Kerkrade heeft nu objecten
-  const tabs = [["verhaal","Verhaal"],["tijdlijn","Tijdlijn"],["themas","Thema\u2019s"],["bron","Bronnen"]];
+  const tabs = [["verhaal","Verhaal"]]
+    .concat(p.doen ? [["doen","Doen"]] : [])
+    .concat([["tijdlijn","Tijdlijn"],["themas","Thema\u2019s"],["bron","Bronnen"]]);
   let h = schaalpad(p.id);
   h += '<div class="hero">' +
     (p.afbeelding ? '<img src="' + img(p.afbeelding,300) + '" alt="">'
@@ -732,6 +739,21 @@ function openPlaats(id){
     if (eigen.length) h += '<h4>Op de kaart</h4><p>' + A.pois.length + " plekken, en " +
         A.gebiedsverhalen.length + ' verhalen die niet aan \u00e9\u00e9n plek hangen. ' +
         '<a class="lnk" data-graaf="1">Bekijk het netwerk</a>.</p>';
+  }
+  if (plaatsTab === "doen" && p.doen){
+    h += '<div class="conn">' + p.doen.map(d => {
+      const kop = "<span><strong>" + esc(d.naam) + "</strong>" +
+                  '<span class="rel">' + esc(d.tekst) + "</span></span>";
+      if (d.link){
+        const q = byId(d.link);
+        return '<button data-go="' + d.link + '"><span class="dot" style="background:' +
+               (q ? kleur(q) : "#6b7382") + '"></span>' + kop + "</button>";
+      }
+      return '<a href="' + d.url + '" target="_blank" rel="noopener">' +
+             '<span class="dot" style="background:#6b7382"></span>' + kop +
+             '<span class="ext">↗</span></a>';
+    }).join("") + "</div>";
+    h += '<div class="cap" style="margin-top:10px">Een gekleurde stip staat ook als verhaal op de kaart; ↗ opent de officiële site. Bronnen per bewering staan onder <em>Bronnen</em>.</div>';
   }
   if (plaatsTab === "tijdlijn") h += tijdlijn(eigen);
   if (plaatsTab === "themas")   h += themaTegels(p.themas||[]);

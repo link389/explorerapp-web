@@ -220,12 +220,13 @@
   #zoek{position:absolute;inset:0;z-index:1400;background:#0b0d11f2;backdrop-filter:blur(4px);
     display:none;overflow-y:auto;-webkit-overflow-scrolling:touch}
   body.zoek #zoek{display:block}
-  #zoekX{position:fixed;top:10px;right:12px;z-index:2;width:38px;height:38px;border-radius:12px;
+  #zoekX{width:38px;height:38px;border-radius:12px;flex:0 0 auto;
     background:#171a21e8;border:1px solid var(--line);color:var(--tx2);font-size:18px;cursor:pointer}
   #zoekX:hover{color:var(--tx)}
-  .zkKader{max-width:560px;margin:0 auto;padding:8vh 18px calc(34px + env(safe-area-inset-bottom))}
+  .zkKader{max-width:560px;margin:0 auto;padding:5vh 18px calc(34px + env(safe-area-inset-bottom))}
+  .zkBrand{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}
   .zkBrand b{font-size:26px;letter-spacing:.2px}
-  .zkBrand span{display:block;color:var(--tx2);margin:6px 0 18px;font-size:14px;line-height:1.5}
+  .zkBrand span{display:block;width:100%;color:var(--tx2);margin:2px 0 18px;font-size:14px;line-height:1.5}
   .zkVeld{display:flex;align-items:center;gap:9px;background:var(--card);border:1px solid var(--line);
     border-radius:13px;padding:3px 14px;margin-bottom:6px}
   .zkVeld:focus-within{border-color:var(--acc)}
@@ -299,9 +300,8 @@
 </div>
 
 <div id="zoek">
-  <button id="zoekX" title="Naar de kaart">×</button>
   <div class="zkKader">
-    <div class="zkBrand"><b>ExplorerApp</b>
+    <div class="zkBrand"><b>ExplorerApp</b><button id="zoekX" title="Naar de kaart">×</button>
       <span>Zoek een plaats, een thema of een plek. De kaart volgt je keuze.</span></div>
     <div class="zkVeld"><input id="zoekVeld" type="search" autocomplete="off" spellcheck="false"
       placeholder="Zoek: stad, streek, thema, plek&hellip;"></div>
@@ -472,9 +472,9 @@ function hertekenen(){
 }
 map.on("zoomend moveend", hertekenen);
 
-// startbeeld: uitgezoomd op de streek, achter de verkenner. Inzoomen op een
-// plaats is geen beginstand maar een focusmodus — het gevolg van een keuze.
-map.setView([50.89, 5.99], 11);
+// startbeeld: alle punten in beeld. De verkenner (zoeken, beginpunten) zit
+// achter ⌕ linksboven — vooraf verkennen begint dáár, ter plekke begint hier.
+map.fitBounds(L.latLngBounds(A.pois.map(p => p.coord)), { padding:[70,90], maxZoom:16 });
 
 /* ---------- thema-filters: aan/uit, alles staat standaard aan ---------- */
 Object.keys(T).forEach(k => filterAan[k] = true);
@@ -829,9 +829,9 @@ document.getElementById("fArea").onclick = () => {
 };
 
 /* ---------- de verkenner ---------------------------------------------------
-   Het startscherm, en daarna de zoeker. Er zijn twee momenten om te verkennen:
-   vooraf (thuis of in het hotel) en ter plekke. Dit scherm bedient het eerste:
-   je begint niet op een kaart maar bij een vraag — welke plaats, welk thema,
+   De zoeker achter ⌕ linksboven. Er zijn twee momenten om te verkennen:
+   vooraf (thuis of in het hotel) en ter plekke. Ter plekke begint op de
+   kaart; vooraf begint hier — bij een vraag: welke plaats, welk thema,
    welke plek? De kaart ingezoomd op wat je koos is de fócusmodus die volgt. */
 
 const norm = s => String(s).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -943,7 +943,7 @@ function renderZoek(q){
 }
 
 function kiesUitZoek(soort, id){
-  sluitZoek(true);
+  sluitZoek();
   if (soort === "plaats") return focusPlaats(id);
   if (soort === "thema")  return focusThema(id);
   const o = byId(id);
@@ -961,13 +961,8 @@ function openZoek(){
   // alleen op een groot scherm meteen het toetsenbord in het veld zetten
   if (matchMedia("(min-width:820px)").matches) setTimeout(() => veld.focus(), 60);
 }
-let zoekTip = true;
-function sluitZoek(stil){
+function sluitZoek(){
   document.body.classList.remove("zoek");
-  if (zoekTip && !stil){
-    zoekTip = false;
-    toast("Tik op een punt — of zoek opnieuw via ⌕ linksboven.");
-  }
 }
 
 veld.addEventListener("input", () => renderZoek(veld.value));
@@ -1103,8 +1098,9 @@ function toast(m){
   clearTimeout(tt); tt = setTimeout(() => t.classList.remove("on"), 2600);
 }
 
-verf();     // eerste tekenbeurt: filters staan aan, dan clusteren
-openZoek(); // de verkenner is het startscherm; de kaart is wat je daarna krijgt
+verf();   // eerste tekenbeurt: filters staan aan, dan clusteren
+
+setTimeout(() => toast("Tik op een punt — of zoek een plaats of thema via ⌕ linksboven."), 700);
 } // einde start()
 
 const _d = document.createElement("script");

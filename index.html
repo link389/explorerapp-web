@@ -44,6 +44,7 @@
   .chip.uit{opacity:.35;text-decoration:line-through;background:#0f1115cc}
   .chip.uit i{opacity:.5}
   .chip i{font-style:normal;font-size:12px}
+  .chip,.tegel{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 
   /* ---- markers ---- */
   .pin{position:absolute;left:0;top:0;width:var(--s,44px);height:var(--s,44px);cursor:pointer;
@@ -85,14 +86,19 @@
   .fab.on{background:var(--acc);color:#0f1115;border-color:transparent}
 
   /* ---- bottom sheet ---- */
-  #sheet{position:absolute;left:0;right:0;bottom:0;z-index:1100;height:var(--sheet-h);
+  /* Drie standen, zoals een kaart-app hoort te doen: dicht (weggeschoven),
+     half (je ziet de pin én de tekst) en vol. Het paneel is altijd even hoog;
+     de stand is een verschuiving, zodat slepen één rechte lijn is.          */
+  #sheet{position:absolute;left:0;right:0;bottom:0;z-index:1100;
+    height:calc(100dvh - var(--kop, 96px) - 6px);
     background:var(--card);border-top:1px solid var(--line);border-radius:18px 18px 0 0;
     transform:translateY(101%);transition:transform .28s cubic-bezier(.2,.8,.2,1);
-    display:flex;flex-direction:column;box-shadow:0 -10px 40px #0008}
-  body.open #sheet{transform:none}
-  body.max #sheet{height:calc(100dvh - var(--kop, 96px) - 6px)}
-  #grip{padding:9px 0 5px;display:grid;place-items:center;cursor:pointer;flex:0 0 auto}
-  #grip div{width:38px;height:4px;border-radius:2px;background:#39404e}
+    display:flex;flex-direction:column;box-shadow:0 -10px 40px #0008;overscroll-behavior:contain}
+  body.open #sheet{transform:translateY(calc(100% - var(--sheet-h)))}
+  body.open.max #sheet{transform:none}
+  body.open:not(.max) #sheetScroll{overflow:hidden;touch-action:none}
+  #grip{padding:10px 0 6px;display:grid;place-items:center;cursor:grab;flex:0 0 auto;touch-action:none}
+  #grip div{width:40px;height:5px;border-radius:3px;background:#39404e}
   #sheetScroll{overflow-y:auto;padding:0 16px calc(22px + env(safe-area-inset-bottom));flex:1}
 
   .hero{display:flex;gap:12px;align-items:flex-start;margin-bottom:12px}
@@ -196,29 +202,6 @@
   .brand{cursor:pointer}
   .brand:hover b{color:var(--acc)}
 
-  /* ---- de graaf: alle verbindingen tegelijk, levend ---- */
-  #graaf{position:absolute;inset:0;z-index:1300;background:#0b0d11f2;backdrop-filter:blur(3px);
-    display:none}
-  body.graaf #graaf{display:block}
-  #graaf svg{width:100%;height:100%;touch-action:none;cursor:grab}
-  #graaf svg:active{cursor:grabbing}
-  .gk{stroke:#3b4250;stroke-width:1.1;opacity:.5}
-  .gk.sterk{stroke-width:1.9;opacity:.75}
-  .gn{cursor:pointer}
-  .gn circle{stroke:#0b0d11;stroke-width:2;transition:r .18s}
-  .gn:hover circle{stroke:#fff}
-  .gn text{fill:var(--tx2);font-size:9.5px;text-anchor:middle;pointer-events:none;
-    paint-order:stroke;stroke:#0b0d11;stroke-width:3px;stroke-linejoin:round}
-  .gn.hub text{fill:var(--tx);font-size:11.5px;font-weight:700}
-  .gn.flauw{opacity:.22}
-  #graafKop{position:absolute;top:0;left:0;right:0;z-index:2;padding:12px 14px;
-    background:linear-gradient(#0b0d11ee 60%,#0b0d1100);pointer-events:none}
-  #graafKop b{font-size:15px;color:var(--tx)}
-  #graafKop span{display:block;font-size:12px;color:var(--tx3);margin-top:2px}
-  #graafDicht{position:absolute;top:10px;right:12px;z-index:3;width:38px;height:38px;
-    border-radius:12px;background:#171a21e8;border:1px solid var(--line);color:var(--tx2);
-    font-size:18px;cursor:pointer}
-
   /* ---- de verkenner: het startscherm, en later de zoeker ----------------
      Dit ligt bóven de kaart. De kaart ingezoomd op een plaats is geen
      startpunt maar een focusmodus: het gevolg van een keuze hier.         */
@@ -272,7 +255,7 @@
     #sheet{left:auto;right:0;top:0;width:420px;height:100vh;border-radius:0;
       border-left:1px solid var(--line);border-top:none;transform:translateX(101%)}
     body.open #sheet{transform:none}
-    body.max #sheet{height:100dvh}
+    body.open:not(.max) #sheetScroll{overflow-y:auto;touch-action:auto}
     #fabs{bottom:20px}
     body.open #fabs{bottom:20px;right:436px}
     /* header stopt bij de zijbalk in plaats van eroverheen te lopen */
@@ -294,7 +277,7 @@
 </div>
 
 <div id="fabs">
-  <button class="fab" id="fNet" title="Verbindingen. Houd ingedrukt voor het hele netwerk.">◈</button>
+  <button class="fab" id="fNet" title="Verbindingen op de kaart">◈</button>
   <button class="fab" id="fArea" title="Verhalen over dit gebied">▤</button>
   <button class="fab" id="fLoc" title="Mijn locatie">◎</button>
 </div>
@@ -314,10 +297,6 @@
   </div>
 </div>
 
-<div id="graaf">
-  <div id="graafKop"><b>Het netwerk</b><span>Plekken, verhalen en thema’s. Tik een bol.</span></div>
-  <button id="graafDicht">×</button>
-</div>
 <div id="lodBadge"></div>
 <div id="toast"></div>
 
@@ -348,7 +327,7 @@ function verrijk(txt){
 function bindLinks(){
   scroll.querySelectorAll("[data-link]").forEach(a => a.onclick = () => {
     const id = a.dataset.link;
-    if (T[id])                               focusThema(id);
+    if (T[id])                               focusThema(id, true);
     else if (A.plaatsen.some(p => p.id===id)) focusPlaats(id);
     else                                     open(id);
   });
@@ -366,6 +345,7 @@ function meetKop(){
 }
 meetKop();
 window.addEventListener("resize", meetKop);
+if (window.ResizeObserver) new ResizeObserver(meetKop).observe(document.getElementById("top"));
 window.map = map;
 L.control.zoom({ position:"bottomleft" }).addTo(map);
 L.control.attribution({ position:"bottomright", prefix:false })
@@ -484,7 +464,31 @@ map.on("zoomend moveend", hertekenen);
 // zit achter ⌕ linksboven — vooraf verkennen begint dáár, ter plekke begint hier.
 map.fitBounds(L.latLngBounds(A.pois.map(p => p.coord)), { padding:[70,90], maxZoom:16 });
 
-/* ---------- thema-filters: aan/uit, alles staat standaard aan ---------- */
+/* ---------- tik of ingedrukt houden -----------------------------------
+   Eén knop, twee bedoelingen: tikken doet het gewone (filteren, openen),
+   ingedrukt houden laat de tekst zien. Wordt gebruikt voor chips en tegels. */
+function bindDruk(el, tik, lang){
+  let timer = null, langGedaan = false, y0 = 0;
+  el.addEventListener("pointerdown", e => {
+    langGedaan = false; y0 = e.clientY;
+    timer = setTimeout(() => { timer = null; langGedaan = true; lang(); }, 480);
+  });
+  const stop = () => { if (timer){ clearTimeout(timer); timer = null; } };
+  ["pointerup","pointerleave","pointercancel"].forEach(ev => el.addEventListener(ev, stop));
+  el.addEventListener("pointermove", e => { if (Math.abs(e.clientY - y0) > 10) stop(); });
+  el.addEventListener("contextmenu", e => e.preventDefault());
+  el.onclick = () => { if (langGedaan){ langGedaan = false; return; } tik(); };
+}
+const alleThemasAan = () => Object.keys(T).forEach(x => filterAan[x] = true);
+const alleenThema   = k  => Object.keys(T).forEach(x => filterAan[x] = (x === k));
+function pasOpThema(k){
+  const met = objectenVanThema(k).filter(o => o.coord);
+  if (met.length) map.fitBounds(L.latLngBounds(met.map(o => o.coord)), kaartPas());
+}
+
+/* ---------- thema-filters: alles staat standaard aan ----------------------
+   Tik op een chip: alleen dit thema op de kaart (nog eens: weer alles).
+   Ingedrukt houden: het themaverhaal.                                      */
 Object.keys(T).forEach(k => filterAan[k] = true);
 
 const chips = document.getElementById("chips");
@@ -492,20 +496,18 @@ Object.entries(T).forEach(([k,t]) => {
   const b = document.createElement("button");
   b.className = "chip"; b.dataset.k = k;
   b.innerHTML = '<i style="color:' + t.kleur + '">' + t.icoon + "</i>" + t.label;
-  b.onclick = () => {
-    // shift of een lange druk: alleen dit thema. Anders: dit thema aan/uit.
-    const alleenDit = Object.keys(T).every(x => x === k || !filterAan[x]);
-    if (alleenDit && filterAan[k]) Object.keys(T).forEach(x => filterAan[x] = true);
-    else filterAan[k] = !filterAan[k];
-    if (!Object.values(filterAan).some(Boolean)) Object.keys(T).forEach(x => filterAan[x] = true);
+  bindDruk(b, () => {
+    const alleenDit = filterAan[k] && Object.keys(T).every(x => x === k || !filterAan[x]);
+    if (alleenDit) alleThemasAan(); else { alleenThema(k); pasOpThema(k); }
     verf();
-  };
+  }, () => focusThema(k, true));
   chips.appendChild(b);
 });
+meetKop();   // de chips maken de kopbalk hoger; het paneel rekent daarmee
 
 const alles = document.createElement("button");
 alles.className = "chip"; alles.id = "chipAlles"; alles.textContent = "Alles";
-alles.onclick = () => { Object.keys(T).forEach(x => filterAan[x] = true); verf(); };
+alles.onclick = () => { alleThemasAan(); verf(); };
 chips.prepend(alles);   // vooraan, anders staat de reset buiten beeld op een telefoon
 
 // alleen de thema's van de pins die nu in beeld zijn; staat er niets in beeld,
@@ -555,19 +557,14 @@ function tekenNet(focus){
     }).addTo(netLayer);
   }));
 }
-// korte tik: verbindingen op de kaart. Lange druk of dubbeltik: de volledige graaf.
+// de verbindingen als lijnen op de kaart, aan of uit. (Een aparte netwerkgraaf
+// is er geweest en bewust weer weggehaald: de kaart, de inline verwijzingen en
+// het tabblad Verbindingen laten hetzelfde web al zien, leesbaarder.)
 const fNet = document.getElementById("fNet");
 fNet.onclick = function(){
   netAan = !netAan; this.classList.toggle("on", netAan);
-  netAan ? (tekenNet(null), toast("Verbindingen op de kaart — houd ingedrukt voor het hele netwerk"))
-         : netLayer.clearLayers();
+  netAan ? (tekenNet(null), toast("Verbindingen op de kaart")) : netLayer.clearLayers();
 };
-let drukTimer = null;
-const startDruk = () => { drukTimer = setTimeout(() => { drukTimer = null; openGraaf(); }, 480); };
-const stopDruk  = () => { if (drukTimer) { clearTimeout(drukTimer); drukTimer = null; } };
-fNet.addEventListener("pointerdown", startDruk);
-["pointerup","pointerleave","pointercancel"].forEach(e => fNet.addEventListener(e, stopDruk));
-fNet.ondblclick = openGraaf;
 
 /* ---------- locatie ----------------------------------------------------
    Twee momenten: wie ergens stáát wil meteen zien wat er om hem heen is; wie
@@ -601,10 +598,91 @@ document.getElementById("fLoc").onclick = () => naarLocatie(false);
 
 /* ---------- sheet ---------- */
 const sheet = document.getElementById("sheet"), scroll = document.getElementById("sheetScroll");
-document.getElementById("grip").onclick = () => document.body.classList.toggle("max");
 map.on("click", sluit);
 
+/* ---------- de standen van het paneel ------------------------------------
+   dicht / half / vol. Tik op de greep wisselt half en vol. Slepen werkt zoals
+   je verwacht: omhoog naar vol, omlaag naar half en daarna weg. In de stand
+   half scrolt de tekst niet — omhoog vegen maakt het paneel eerst vol. Op een
+   breed scherm is het paneel een zijbalk en is dit alles niet van toepassing. */
+const mobiel = () => !matchMedia("(min-width:820px)").matches;
+function stand(){
+  return !document.body.classList.contains("open") ? "dicht"
+       : document.body.classList.contains("max") ? "vol" : "half";
+}
+let paneelSleutel = null;   // wat er open staat; een tabwissel is geen nieuw paneel
+function toonPaneel(sleutel){
+  const nieuw = paneelSleutel !== sleutel;
+  paneelSleutel = sleutel;
+  if (nieuw || stand() === "dicht") zetStand("half");
+}
+function zetStand(st){
+  sheet.style.transform = ""; sheet.style.transition = "";
+  if (st === "dicht") return sluit();
+  document.body.classList.add("open");
+  document.body.classList.toggle("max", st === "vol");
+}
+// hoeveel het paneel in de stand half naar beneden staat, in pixels
+const halfVerschuiving = () => sheet.getBoundingClientRect().height - window.innerHeight * 0.46;
+// het punt waar de kaart heen moet zodat een coördinaat in het zichtbare deel valt
+function zichtbaarCentrum(coord, z){
+  const maat = map.getSize();
+  const schuif = mobiel() ? [0, maat.y * 0.23] : [210, 0];
+  return map.unproject(map.project(L.latLng(coord), z).add(schuif), z);
+}
+// ruimte voor het paneel bij fitBounds
+function kaartPas(){
+  if (stand() === "dicht") return { padding:[60,80], maxZoom:16 };
+  return mobiel()
+    ? { paddingTopLeft:[40, 100], paddingBottomRight:[40, window.innerHeight * 0.46 + 40], maxZoom:16 }
+    : { paddingTopLeft:[40, 100], paddingBottomRight:[460, 40], maxZoom:16 };
+}
+
+let sleep = null, netGesleept = false;
+sheet.addEventListener("pointerdown", e => {
+  if (!mobiel() || stand() === "dicht") return;
+  if (e.target.closest("a, button, .tab, input")) return;
+  sleep = { y0:e.clientY, t0:performance.now(), stand:stand(), opGrip:!!e.target.closest("#grip"),
+            scrollTop:scroll.scrollTop, actief:false, dy:0, id:e.pointerId };
+});
+sheet.addEventListener("pointermove", e => {
+  if (!sleep) return;
+  const dy = e.clientY - sleep.y0;
+  if (!sleep.actief){
+    if (Math.abs(dy) < 8) return;
+    // in de stand vol mag je alleen slepen vanaf de greep, of omlaag als de tekst bovenaan staat
+    if (sleep.stand === "vol" && !sleep.opGrip && !(dy > 0 && sleep.scrollTop === 0)) { sleep = null; return; }
+    sleep.actief = true;
+    try { sheet.setPointerCapture(sleep.id); } catch (_) {}
+    sheet.style.transition = "none";
+  }
+  sleep.dy = dy;
+  const basis = sleep.stand === "vol" ? 0 : halfVerschuiving();
+  sheet.style.transform = "translateY(" + Math.max(0, basis + dy) + "px)";
+  e.preventDefault();
+}, { passive:false });
+function sleepEinde(){
+  if (!sleep) return;
+  const s = sleep; sleep = null;
+  if (!s.actief) return;
+  netGesleept = true; setTimeout(() => netGesleept = false, 50);
+  const v = s.dy / Math.max(1, performance.now() - s.t0);          // px per ms
+  const basis = s.stand === "vol" ? 0 : halfVerschuiving();
+  const y = basis + s.dy, H = sheet.getBoundingClientRect().height;
+  let doel;
+  if (Math.abs(v) > 0.45) doel = v < 0 ? "vol" : (s.stand === "vol" ? "half" : "dicht");
+  else doel = [["vol",0],["half",halfVerschuiving()],["dicht",H]]
+                .sort((a,b) => Math.abs(a[1]-y) - Math.abs(b[1]-y))[0][0];
+  zetStand(doel);
+}
+["pointerup","pointercancel"].forEach(ev => sheet.addEventListener(ev, sleepEinde));
+document.getElementById("grip").onclick = () => {
+  if (netGesleept) return;
+  zetStand(stand() === "vol" ? "half" : "vol");
+};
+
 function sluit(){
+  paneelSleutel = null;
   document.body.classList.remove("open","max");
   Object.values(markers).forEach(x => x.el.classList.remove("sel"));
   if (!netAan) netLayer.clearLayers(); else tekenNet(null);
@@ -617,12 +695,13 @@ function open(id, houdTab){
   huidig = id; if (!houdTab) tab = "verhaal";
   Object.values(markers).forEach(x => x.el.classList.toggle("sel", x.poi.id === id));
   if (o.coord){
-    // het geselecteerde punt moet altijd los zichtbaar zijn, ook als het in een cluster zat
-    if (map.getZoom() < 16) map.setView(o.coord, 16, { animate:true });
-    else map.panTo(o.coord, { animate:true });
+    // het geselecteerde punt komt in het zichtbare deel van de kaart te staan,
+    // niet achter het paneel; en altijd los, ook als het in een cluster zat
+    const z = Math.max(map.getZoom(), 16);
+    map.setView(zichtbaarCentrum(o.coord, z), z, { animate:true });
   }
   tekenNet(id);
-  document.body.classList.add("open");
+  toonPaneel("object:" + id);
   hertekenen();
   render(o);
   scroll.scrollTop = 0;
@@ -685,7 +764,8 @@ function render(o){
   scroll.innerHTML = h;
   scroll.querySelectorAll(".tab").forEach(t => t.onclick = () => { tab = t.dataset.t; render(o); });
   scroll.querySelectorAll("[data-go]").forEach(b => b.onclick = () => open(b.dataset.go));
-  scroll.querySelectorAll("[data-thema]").forEach(b => b.onclick = () => focusThema(b.dataset.thema));
+  scroll.querySelectorAll("[data-thema]").forEach(b =>
+    bindDruk(b, () => focusThema(b.dataset.thema), () => focusThema(b.dataset.thema, true)));
   scroll.querySelectorAll("[data-plaats]").forEach(b => b.onclick = () => focusPlaats(b.dataset.plaats));
   bindLinks();
 }
@@ -755,7 +835,7 @@ function openPlaats(id){
   huidig = null;
   Object.values(markers).forEach(x => x.el.classList.remove("sel"));
   netLayer.clearLayers();
-  document.body.classList.add("open", "max");
+  toonPaneel("plaats:" + id);
   const eigen = objectenVanPlaats(p.id);
   const tabs = [["verhaal","Verhaal"]]
     .concat(p.doen ? [["doen","Doen"]] : [])
@@ -780,8 +860,7 @@ function openPlaats(id){
       h += themaTegels(p.themas);
     }
     if (eigen.length) h += '<h4>Op de kaart</h4><p>' + eigen.filter(o => o.coord).length + " plekken, en " +
-        eigen.filter(o => !o.coord).length + ' verhalen die niet aan \u00e9\u00e9n plek hangen. ' +
-        '<a class="lnk" data-graaf="1">Bekijk het netwerk</a>.</p>';
+        eigen.filter(o => !o.coord).length + ' verhalen die niet aan \u00e9\u00e9n plek hangen.</p>';
   }
   if (plaatsTab === "doen" && p.doen){
     h += '<div class="conn">' + p.doen.map(d => {
@@ -809,7 +888,6 @@ function openPlaats(id){
   h += "</div>";
   scroll.innerHTML = h;
   bindKaart(() => openPlaats(id), k => { plaatsTab = k; openPlaats(id); }, "pt");
-  scroll.querySelectorAll("[data-graaf]").forEach(a => a.onclick = openGraaf);
   scroll.scrollTop = 0;
 }
 
@@ -817,7 +895,7 @@ function openThema(k){
   const t = T[k]; if (!t) return;
   huidig = null;
   Object.values(markers).forEach(x => x.el.classList.remove("sel"));
-  document.body.classList.add("open", "max");
+  toonPaneel("thema:" + k);
   const obj = objectenVanThema(k);
   const tabs = [["verhaal","Verhaal"],["tijdlijn","Tijdlijn"],["plekken","Plekken"],
                 ["elders","Elders"],["bron","Bronnen"]];
@@ -862,7 +940,8 @@ function bindKaart(hertekenSelf, zetTab, tabAttr){
   scroll.querySelectorAll("[data-" + tabAttr + "]").forEach(t =>
     t.onclick = () => zetTab(t.dataset[tabAttr === "pt" ? "pt" : "tt"]));
   scroll.querySelectorAll("[data-go]").forEach(b => b.onclick = () => open(b.dataset.go));
-  scroll.querySelectorAll("[data-thema]").forEach(b => b.onclick = () => focusThema(b.dataset.thema));
+  scroll.querySelectorAll("[data-thema]").forEach(b =>
+    bindDruk(b, () => focusThema(b.dataset.thema), () => focusThema(b.dataset.thema, true)));
   scroll.querySelectorAll("[data-plaats]").forEach(b => b.onclick = () => focusPlaats(b.dataset.plaats));
   bindLinks();
 }
@@ -877,7 +956,7 @@ function sc(label, v, kl){
 
 /* ---------- gebiedsverhalen ---------- */
 document.getElementById("fArea").onclick = () => {
-  document.body.classList.add("open","max");
+  toonPaneel("verhalen");
   Object.values(markers).forEach(x => x.el.classList.remove("sel"));
   const steden = A.plaatsen.filter(p => A.gebiedsverhalen.some(g => plaatsVan(g) === p.id));
   scroll.innerHTML =
@@ -907,18 +986,23 @@ const norm = s => String(s).toLowerCase().normalize("NFD").replace(/[\u0300-\u03
 // focus: de kaart springt naar wat je koos, daarna opent het bijbehorende verhaal
 function focusPlaats(id){
   const p = plaatsById(id); if (!p) return;
+  alleThemasAan(); verf();          // een stad kies je heel, niet gefilterd
   const eigen = objectenVanPlaats(p.id).filter(o => o.coord);
   if (eigen.length)
-    map.fitBounds(L.latLngBounds(eigen.map(o => o.coord)), { padding:[70,90], maxZoom:16 });
+    map.fitBounds(L.latLngBounds(eigen.map(o => o.coord)), kaartPas());
   else if (p.kaart)
-    map.setView(p.kaart.centrum, p.kaart.zoom);
+    map.setView(zichtbaarCentrum(p.kaart.centrum, p.kaart.zoom), p.kaart.zoom);
   plaatsTab = "verhaal"; openPlaats(id);
 }
-function focusThema(k){
-  const met = objectenVanThema(k).filter(o => o.coord);
-  if (met.length)
-    map.fitBounds(L.latLngBounds(met.map(o => o.coord)), { padding:[70,90], maxZoom:16 });
-  themaTab = "verhaal"; openThema(k);
+// tik op een thema: alleen dít thema op de kaart, ingezoomd op zijn plekken, en
+// het paneel half op Plekken. Met `lees` (ingedrukt houden, of een verwijzing
+// in een tekst): het themaverhaal, paneel vol.
+function focusThema(k, lees){
+  alleenThema(k); verf();
+  pasOpThema(k);
+  themaTab = lees ? "verhaal" : "plekken";
+  openThema(k);
+  if (lees) zetStand("vol");
 }
 
 // de zoekindex: alles wat een naam heeft, over vier soorten
@@ -1009,7 +1093,7 @@ function renderZoek(q){
   uit.querySelectorAll("[data-kies]").forEach(b =>
     b.onclick = () => kiesUitZoek(b.dataset.soort, b.dataset.kies));
   uit.querySelectorAll("[data-thema]").forEach(b =>
-    b.onclick = () => kiesUitZoek("thema", b.dataset.thema));
+    bindDruk(b, () => kiesUitZoek("thema", b.dataset.thema), () => { sluitZoek(); focusThema(b.dataset.thema, true); }));
   const vrij = uit.querySelector("#zoekVrij");
   if (vrij) vrij.onclick = () => {
     sluitZoek();
@@ -1022,13 +1106,15 @@ function kiesUitZoek(soort, id){
   if (soort === "plaats") return focusPlaats(id);
   if (soort === "thema")  return focusThema(id);
   const o = byId(id);
-  if (o && !o.coord)      // gebiedsverhaal: geen pin, dus de stad als decor
-    map.fitBounds(L.latLngBounds(A.pois.map(p => p.coord)), { padding:[70,90], maxZoom:16 });
+  if (o && !o.coord){     // gebiedsverhaal: geen pin, dus de eigen stad als decor
+    const stad = ALL.filter(x => plaatsVan(x) === plaatsVan(o) && x.coord);
+    map.fitBounds(L.latLngBounds((stad.length ? stad : A.pois).map(p => p.coord)), kaartPas());
+  }
   open(id);
 }
 
 function openZoek(){
-  document.body.classList.remove("open", "max", "graaf");
+  document.body.classList.remove("open", "max");
   document.body.classList.add("zoek");
   veld.value = "";
   renderZoek("");
@@ -1049,121 +1135,6 @@ document.addEventListener("keydown", e => {
 });
 document.getElementById("zoekX").onclick = () => sluitZoek();
 document.getElementById("zoekKnop").onclick = openZoek;
-
-/* ---------- de graaf ------------------------------------------------------
-   Een eenvoudige krachtensimulatie: knopen duwen elkaar weg, verbindingen
-   trekken ze naar elkaar toe, en alles zwiept naar het midden. Genoeg om het
-   web te laten zien zonder een bibliotheek erbij te halen.                  */
-const graafEl = document.getElementById("graaf");
-let sim = null;
-
-function bouwGraaf(){
-  const NS = "http://www.w3.org/2000/svg";
-  graafEl.querySelectorAll("svg").forEach(e => e.remove());
-  const svg = document.createElementNS(NS, "svg");
-  graafEl.appendChild(svg);
-  const B = graafEl.getBoundingClientRect();
-  const W = B.width, H = B.height;
-
-  // knopen: thema's zijn hubs, objecten hangen eraan
-  const knopen = [], index = {};
-  const voegToe = (id, naam, kl, r, hub) => {
-    const n = { id, naam, kl, r, hub,
-      x: W/2 + (Math.random()-.5)*W*.7, y: H/2 + (Math.random()-.5)*H*.7, vx:0, vy:0 };
-    index[id] = n; knopen.push(n); return n;
-  };
-  Object.entries(T).forEach(([k,th]) => voegToe(k, th.label, th.kleur, 15, true));
-  ALL.forEach(o => voegToe(o.id, o.naam, kleur(o), 5 + (o.verhaal/100)*7, false));
-
-  const kanten = [];
-  ALL.forEach(o => {
-    (o.themas||[]).forEach(k => index[k] && kanten.push({ a:index[o.id], b:index[k], sterk:false }));
-    (o.verbindingen||[]).forEach(v => index[v.id] &&
-      kanten.push({ a:index[o.id], b:index[v.id], sterk:true }));
-  });
-
-  // tekenen
-  const lijnen = kanten.map(k => {
-    const l = document.createElementNS(NS, "line");
-    l.setAttribute("class", "gk" + (k.sterk ? " sterk" : ""));
-    svg.appendChild(l); return l;
-  });
-  const groepen = knopen.map(n => {
-    const g = document.createElementNS(NS, "g");
-    g.setAttribute("class", "gn" + (n.hub ? " hub" : ""));
-    const c = document.createElementNS(NS, "circle");
-    c.setAttribute("r", n.r); c.setAttribute("fill", n.kl);
-    const tx = document.createElementNS(NS, "text");
-    tx.setAttribute("dy", n.r + 11);
-    tx.textContent = n.naam.length > 22 ? n.naam.slice(0,21) + "\u2026" : n.naam;
-    g.append(c, tx);
-    g.onclick = () => {
-      sluitGraaf();
-      if (T[n.id]) { themaTab = "verhaal"; openThema(n.id); } else open(n.id);
-    };
-    g.onmouseenter = () => {
-      const buren = new Set([n.id]);
-      kanten.forEach(k => { if (k.a===n) buren.add(k.b.id); if (k.b===n) buren.add(k.a.id); });
-      groepen.forEach((gg,i) => gg.classList.toggle("flauw", !buren.has(knopen[i].id)));
-    };
-    g.onmouseleave = () => groepen.forEach(gg => gg.classList.remove("flauw"));
-    svg.appendChild(g); return g;
-  });
-
-  let stap = 0;
-  function tik(){
-    stap++;
-    const koeling = Math.max(0.02, 1 - stap/220);
-    for (let i=0;i<knopen.length;i++){
-      const a = knopen[i];
-      for (let j=i+1;j<knopen.length;j++){
-        const b = knopen[j];
-        let dx = b.x-a.x, dy = b.y-a.y, d2 = dx*dx+dy*dy || 0.01;
-        const d = Math.sqrt(d2);
-        const duw = (a.hub||b.hub ? 5200 : 2300) / d2;
-        const ux = dx/d, uy = dy/d;
-        a.vx -= ux*duw; a.vy -= uy*duw; b.vx += ux*duw; b.vy += uy*duw;
-      }
-      // naar het midden
-      a.vx += (W/2 - a.x) * 0.0016;
-      a.vy += (H/2 - a.y) * 0.0016;
-    }
-    kanten.forEach(k => {
-      const dx = k.b.x-k.a.x, dy = k.b.y-k.a.y;
-      const d = Math.hypot(dx,dy) || 0.01;
-      const rust = k.sterk ? 78 : 96;
-      const f = (d - rust) * 0.012;
-      const ux = dx/d, uy = dy/d;
-      k.a.vx += ux*f; k.a.vy += uy*f; k.b.vx -= ux*f; k.b.vy -= uy*f;
-    });
-    knopen.forEach((n,i) => {
-      n.vx *= 0.82; n.vy *= 0.82;
-      n.x += n.vx * koeling; n.y += n.vy * koeling;
-      const m = n.r + (n.hub ? 54 : 46);
-      n.x = Math.max(m, Math.min(W-m, n.x));
-      n.y = Math.max(n.r + 52, Math.min(H - n.r - 26, n.y));
-      groepen[i].setAttribute("transform", "translate(" + n.x.toFixed(1) + "," + n.y.toFixed(1) + ")");
-    });
-    lijnen.forEach((l,i) => {
-      const k = kanten[i];
-      l.setAttribute("x1", k.a.x); l.setAttribute("y1", k.a.y);
-      l.setAttribute("x2", k.b.x); l.setAttribute("y2", k.b.y);
-    });
-    if (stap < 400) sim = requestAnimationFrame(tik); else sim = null;
-  }
-  tik();
-}
-
-function openGraaf(){
-  document.body.classList.remove("open","max");
-  document.body.classList.add("graaf");
-  bouwGraaf();
-}
-function sluitGraaf(){
-  document.body.classList.remove("graaf");
-  if (sim) { cancelAnimationFrame(sim); sim = null; }
-}
-document.getElementById("graafDicht").onclick = sluitGraaf;
 
 /* ---------- toast ---------- */
 let tt;

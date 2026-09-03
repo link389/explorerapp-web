@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Ccircle cx=%2716%27 cy=%2716%27 r=%2714%27 fill=%27%230f1115%27/%3E%3Ccircle cx=%2716%27 cy=%2713%27 r=%275%27 fill=%27%23ffb020%27/%3E%3Cpath d=%27M16 19 L16 27%27 stroke=%27%23ffb020%27 stroke-width=%273%27/%3E%3C/svg%3E">
-<title>ExplorerApp — Kerkrade</title>
+<title>ExplorerApp</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
   :root{
@@ -288,7 +288,7 @@
 <div id="map"></div>
 
 <div id="top">
-  <div class="brand"><b>ExplorerApp</b><span>Kerkrade · proefdata</span>
+  <div class="brand"><b>ExplorerApp</b><span id="brandSub">proefdata</span>
     <button id="zoekKnop" title="Zoeken — plaats, thema of plek">&#8981;</button></div>
   <div id="chips"></div>
 </div>
@@ -562,8 +562,11 @@ document.getElementById("fLoc").onclick = () => {
       const c = [p.coords.latitude, p.coords.longitude];
       L.circleMarker(c,{radius:7,color:"#fff",weight:2,fillColor:"#3b82f6",fillOpacity:1}).addTo(map);
       map.setView(c,16);
-      const d = map.distance(c, A.gebied.centrum);
-      toast(d > 20000 ? "Je bent " + Math.round(d/1000) + " km van Kerkrade — proefdata is lokaal" : "Gevonden");
+      const dichtst = stedenMetInhoud().filter(p => p.kaart)
+        .map(p => [map.distance(c, p.kaart.centrum), p]).sort((a,b) => a[0]-b[0])[0];
+      toast(dichtst && dichtst[0] > 20000
+        ? "Je bent " + Math.round(dichtst[0]/1000) + " km van " + dichtst[1].naam + ", de dichtstbijzijnde stad met verhalen"
+        : "Gevonden");
     },
     () => toast("Locatie geweigerd of niet beschikbaar"));
 };
@@ -601,7 +604,7 @@ function render(o){
   const c = kleur(o), heeftPin = !!o.coord;
   const tabs = [["verhaal","Verhaal"],["waarom","Waarom hier"],["let","Let hierop"],
                 ["verbind","Verbindingen"],["bron","Bronnen"]];
-  let h = schaalpad("kerkrade", o.naam);
+  let h = schaalpad(plaatsVan(o), o.naam);
 
   h += '<div class="hero">' +
     (o.afbeelding
@@ -665,6 +668,18 @@ function render(o){
 const plaatsById = id => A.plaatsen.find(p => p.id === id);
 const objectenVanThema = k => ALL.filter(o => (o.themas||[]).includes(k));
 
+// elk object hoort bij één plaats (`plaats`); een streek of land "bevat"
+// alles wat via de stapel eronder hangt
+const plaatsVan = o => o.plaats || "kerkrade";
+function ligtIn(plaatsId, doelId){
+  let p = plaatsById(plaatsId);
+  while (p){ if (p.id === doelId) return true; p = p.ouder ? plaatsById(p.ouder) : null; }
+  return false;
+}
+const objectenVanPlaats = id => ALL.filter(o => ligtIn(plaatsVan(o), id));
+// een stad "met inhoud" heeft zélf pins; een streek of land erft ze alleen via de stapel
+const stedenMetInhoud = () => A.plaatsen.filter(p => ALL.some(o => plaatsVan(o) === p.id && o.coord));
+
 function stapelVan(id){            // van land naar beneden tot deze plaats
   const rij = []; let p = plaatsById(id);
   while (p){ rij.unshift(p); p = p.ouder ? plaatsById(p.ouder) : null; }
@@ -713,7 +728,7 @@ function openPlaats(id){
   Object.values(markers).forEach(x => x.el.classList.remove("sel"));
   netLayer.clearLayers();
   document.body.classList.add("open", "max");
-  const eigen = p.id === "kerkrade" ? ALL : [];   // alleen Kerkrade heeft nu objecten
+  const eigen = objectenVanPlaats(p.id);
   const tabs = [["verhaal","Verhaal"]]
     .concat(p.doen ? [["doen","Doen"]] : [])
     .concat([["tijdlijn","Tijdlijn"],["themas","Thema\u2019s"],["bron","Bronnen"]]);
@@ -736,8 +751,8 @@ function openPlaats(id){
       h += '<div class="cap" style="margin-top:-2px">Hierboven staat het korte antwoord. De echte verhalen zitten in de thema\u2019s.</div>';
       h += themaTegels(p.themas);
     }
-    if (eigen.length) h += '<h4>Op de kaart</h4><p>' + A.pois.length + " plekken, en " +
-        A.gebiedsverhalen.length + ' verhalen die niet aan \u00e9\u00e9n plek hangen. ' +
+    if (eigen.length) h += '<h4>Op de kaart</h4><p>' + eigen.filter(o => o.coord).length + " plekken, en " +
+        eigen.filter(o => !o.coord).length + ' verhalen die niet aan \u00e9\u00e9n plek hangen. ' +
         '<a class="lnk" data-graaf="1">Bekijk het netwerk</a>.</p>';
   }
   if (plaatsTab === "doen" && p.doen){
@@ -778,7 +793,7 @@ function openThema(k){
   const obj = objectenVanThema(k);
   const tabs = [["verhaal","Verhaal"],["tijdlijn","Tijdlijn"],["plekken","Plekken"],
                 ["elders","Elders"],["bron","Bronnen"]];
-  let h = schaalpad("kerkrade", t.label);
+  let h = schaalpad(t.plaats || plaatsVan(obj[0] || {}), t.label);
   h += "<h1>" + esc(t.label) + "</h1>" +
        '<div class="sub">Thema op ' + esc(t.schaal||"stad") + "sniveau \u00b7 " + obj.length + " plekken</div>" +
        '<p class="glance">' + esc(t.glance||"") + "</p>";
@@ -836,14 +851,17 @@ function sc(label, v, kl){
 document.getElementById("fArea").onclick = () => {
   document.body.classList.add("open","max");
   Object.values(markers).forEach(x => x.el.classList.remove("sel"));
+  const steden = A.plaatsen.filter(p => A.gebiedsverhalen.some(g => plaatsVan(g) === p.id));
   scroll.innerHTML =
-    schaalpad("kerkrade", "Gebiedsverhalen") +
     "<h1>Verhalen</h1>" +
     '<div class="sub">Objecten met te weinig te zién voor een pin — maar met een verhaal dat blijft.</div>' +
-    '<div class="areas">' + A.gebiedsverhalen.map(g =>
-      '<div class="area" data-go="' + g.id + '"><b>' + esc(g.naam) + "</b>" +
-      "<span>" + esc(g.glance) + "</span>" +
-      "<em>esthetiek " + g.esthetiek + " · verhaal " + g.verhaal + "</em></div>").join("") + "</div>" +
+    steden.map(p =>
+      (steden.length > 1 ? '<div class="zkKop">' + esc(p.naam) + "</div>" : "") +
+      '<div class="areas">' + A.gebiedsverhalen.filter(g => plaatsVan(g) === p.id).map(g =>
+        '<div class="area" data-go="' + g.id + '"><b>' + esc(g.naam) + "</b>" +
+        "<span>" + esc(g.glance) + "</span>" +
+        "<em>esthetiek " + g.esthetiek + " · verhaal " + g.verhaal + "</em></div>").join("") + "</div>"
+    ).join("") +
     '<div class="cap">De routeringsregel: esthetiek bepaalt niet óf iets interessant is, maar op welk niveau het verschijnt.</div>';
   scroll.querySelectorAll("[data-go]").forEach(b => b.onclick = () => open(b.dataset.go));
   scroll.querySelectorAll("[data-plaats]").forEach(b => b.onclick = () => focusPlaats(b.dataset.plaats));
@@ -861,7 +879,7 @@ const norm = s => String(s).toLowerCase().normalize("NFD").replace(/[\u0300-\u03
 // focus: de kaart springt naar wat je koos, daarna opent het bijbehorende verhaal
 function focusPlaats(id){
   const p = plaatsById(id); if (!p) return;
-  const eigen = p.id === "kerkrade" ? A.pois : [];   // alleen Kerkrade heeft nu objecten
+  const eigen = objectenVanPlaats(p.id).filter(o => o.coord);
   if (eigen.length)
     map.fitBounds(L.latLngBounds(eigen.map(o => o.coord)), { padding:[70,90], maxZoom:16 });
   else if (p.kaart)
@@ -885,10 +903,12 @@ Object.entries(T).forEach(([k,t]) => zoekIndex.push({
   tekst: norm([t.label, t.glance].join(" ")) }));
 A.pois.forEach(p => zoekIndex.push({
   soort:"plek", id:p.id, naam:p.naam, sub:p.ondertitel || p.glance, kleur:kleur(p),
+  em:(plaatsById(plaatsVan(p))||{}).naam,
   tekst: norm([p.naam, p.ondertitel, p.glance,
                p.themas.map(k => (T[k]||{}).label).join(" ")].join(" ")) }));
 A.gebiedsverhalen.forEach(g => zoekIndex.push({
   soort:"verhaal", id:g.id, naam:g.naam, sub:g.ondertitel || g.glance, kleur:kleur(g),
+  em:(plaatsById(plaatsVan(g))||{}).naam,
   tekst: norm([g.naam, g.ondertitel, g.glance,
                g.themas.map(k => (T[k]||{}).label).join(" ")].join(" ")) }));
 
@@ -907,9 +927,13 @@ function zkRij(r){
 // zonder zoekterm: de beginpunten. De schaalstapel bovenaan, dan de thema's.
 function startInhoud(){
   let h = '<div class="zkKop">Begin bij een plaats</div>';
-  h += A.plaatsen.map(p => {
-    const gevuld = p.id === "kerkrade";
-    const em = gevuld ? A.pois.length + " plekken" :
+  const eigenVan = id => ALL.filter(o => plaatsVan(o) === id);
+  const volgorde = A.plaatsen.slice().sort((a,b) =>
+    (eigenVan(b.id).length > 0) - (eigenVan(a.id).length > 0));
+  h += volgorde.map(p => {
+    const eigen = eigenVan(p.id);
+    const gevuld = eigen.some(o => o.coord);
+    const em = gevuld ? eigen.filter(o => o.coord).length + " plekken" :
                (p.verhaal_tekst && !p.onbevestigd) ? p.schaal + "verhaal" : "nog leeg";
     return zkRij({ soort:"plaats", id:p.id, naam:p.naam,
       sub: p.ondertitel || "", em, kleur: gevuld ? "#ffb020" : "#3b4250" });
@@ -938,7 +962,8 @@ function zoekResultaten(qq){
     .sort((a,b) => b[0] - a[0]);
   if (!raak.length)
     return '<div class="zkLeeg">Niets gevonden voor “' + esc(qq) + '”. ' +
-           'De proefdata beslaat alleen Kerkrade — zoek op een plek, een thema of een plaats daar.</div>';
+           'De proefdata beslaat ' + stedenMetInhoud().map(p => p.naam).join(", ") +
+           ' — zoek op een plek, een thema of een plaats daar.</div>';
   // groepen op volgorde van hun beste treffer, zodat het sterkste antwoord bovenaan staat
   const soorten = [["plaats","Plaatsen"],["thema","Thema’s"],
                    ["plek","Plekken op de kaart"],["verhaal","Verhalen zonder pin"]];
@@ -1121,6 +1146,8 @@ function toast(m){
 }
 
 verf();   // eerste tekenbeurt: filters staan aan, dan clusteren
+document.getElementById("brandSub").textContent =
+  stedenMetInhoud().map(p => p.naam).join(" · ") + " · proefdata";
 
 setTimeout(() => toast("Tik op een punt — of zoek een plaats of thema via ⌕ linksboven."), 700);
 } // einde start()

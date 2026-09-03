@@ -93,11 +93,13 @@
     height:calc(100dvh - var(--kop, 96px) - 6px);
     background:var(--card);border-top:1px solid var(--line);border-radius:18px 18px 0 0;
     transform:translateY(101%);transition:transform .28s cubic-bezier(.2,.8,.2,1);
-    display:flex;flex-direction:column;box-shadow:0 -10px 40px #0008;overscroll-behavior:contain}
+    display:flex;flex-direction:column;box-shadow:0 -10px 40px #0008;overscroll-behavior:contain;
+    will-change:transform}
+  body.sleept #sheet{transition:none}
   body.open #sheet{transform:translateY(calc(100% - var(--sheet-h)))}
   body.open.max #sheet{transform:none}
-  body.open:not(.max) #sheetScroll{flex:0 0 calc(var(--sheet-h) - 24px)}
-  #grip{padding:10px 0 6px;display:grid;place-items:center;cursor:grab;flex:0 0 auto;touch-action:none}
+  body.open:not(.max) #sheetScroll{flex:0 0 calc(var(--sheet-h) - 27px)}
+  #grip{padding:12px 0 10px;display:grid;place-items:center;cursor:grab;flex:0 0 auto;touch-action:none}
   #grip div{width:40px;height:5px;border-radius:3px;background:#39404e}
   #sheetScroll{overflow-y:auto;padding:0 16px calc(22px + env(safe-area-inset-bottom));flex:1}
 
@@ -633,7 +635,7 @@ function toonPaneel(sleutel){
   if (nieuw || stand() === "dicht") zetStand("half");
 }
 function zetStand(st){
-  sheet.style.transform = ""; sheet.style.transition = "";
+  sheet.style.transform = "";
   if (st === "dicht") return sluit();
   document.body.classList.add("open");
   document.body.classList.toggle("max", st === "vol");
@@ -657,34 +659,46 @@ function kaartPas(){
 let sleep = null, netGesleept = false;
 sheet.addEventListener("pointerdown", e => {
   if (!mobiel() || stand() === "dicht" || !e.target.closest("#grip")) return;
-  sleep = { y0:e.clientY, t0:performance.now(), stand:stand(), actief:false, dy:0, id:e.pointerId };
+  // alles wat layout kost één keer meten, niet bij elke beweging
+  const H = sheet.getBoundingClientRect().height, halfY = halfVerschuiving();
+  sleep = { y0:e.clientY, stand:stand(), actief:false, id:e.pointerId,
+            basis: stand() === "vol" ? 0 : halfY, H, halfY,
+            y:0, spoor:[{ t:performance.now(), y:e.clientY }], raf:null };
 });
 sheet.addEventListener("pointermove", e => {
   if (!sleep) return;
   const dy = e.clientY - sleep.y0;
   if (!sleep.actief){
-    if (Math.abs(dy) < 8) return;
+    if (Math.abs(dy) < 6) return;
     sleep.actief = true;
     try { sheet.setPointerCapture(sleep.id); } catch (_) {}
-    sheet.style.transition = "none";
+    document.body.classList.add("sleept");
   }
-  sleep.dy = dy;
-  const basis = sleep.stand === "vol" ? 0 : halfVerschuiving();
-  sheet.style.transform = "translateY(" + Math.max(0, basis + dy) + "px)";
+  // het spoor van de laatste 120 ms bewaren: daaruit volgt de snelheid bij loslaten
+  const t = performance.now();
+  sleep.spoor.push({ t, y:e.clientY });
+  while (sleep.spoor.length > 2 && t - sleep.spoor[0].t > 120) sleep.spoor.shift();
+  sleep.y = Math.max(0, sleep.basis + dy);
+  if (!sleep.raf) sleep.raf = requestAnimationFrame(() => {
+    if (sleep){ sheet.style.transform = "translateY(" + sleep.y + "px)"; sleep.raf = null; }
+  });
   e.preventDefault();
 }, { passive:false });
 function sleepEinde(){
   if (!sleep) return;
   const s = sleep; sleep = null;
+  if (s.raf) cancelAnimationFrame(s.raf);
+  document.body.classList.remove("sleept");
   if (!s.actief) return;
   netGesleept = true; setTimeout(() => netGesleept = false, 50);
-  const v = s.dy / Math.max(1, performance.now() - s.t0);          // px per ms
-  const basis = s.stand === "vol" ? 0 : halfVerschuiving();
-  const y = basis + s.dy, H = sheet.getBoundingClientRect().height;
-  let doel;
-  if (Math.abs(v) > 0.45) doel = v < 0 ? "vol" : (s.stand === "vol" ? "half" : "dicht");
-  else doel = [["vol",0],["half",halfVerschuiving()],["dicht",H]]
-                .sort((a,b) => Math.abs(a[1]-y) - Math.abs(b[1]-y))[0][0];
+  // snelheid over het laatste stukje (px per ms), en waar het paneel dan heen zou
+  // glijden: loslaatpunt plus een stukje in de bewegingsrichting. Zo sluit één
+  // lange haal naar beneden, en wordt een korte veeg vanaf vol half.
+  const a = s.spoor[0], b = s.spoor[s.spoor.length - 1];
+  const v = b.t > a.t ? (b.y - a.y) / (b.t - a.t) : 0;
+  const doelY = s.y + v * 160;
+  const doel = [["vol", 0], ["half", s.halfY], ["dicht", s.H]]
+    .sort((a,b) => Math.abs(a[1]-doelY) - Math.abs(b[1]-doelY))[0][0];
   zetStand(doel);
 }
 ["pointerup","pointercancel"].forEach(ev => sheet.addEventListener(ev, sleepEinde));

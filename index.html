@@ -479,9 +479,9 @@ function hertekenen(){
 }
 map.on("zoomend moveend", hertekenen);
 
-// startbeeld: alle punten in beeld, en daarna stil inzoomen op je eigen locatie
-// als daar verhalen in de buurt zijn (naarLocatie, onderaan). De verkenner zit
-// achter ⌕ linksboven — vooraf verkennen begint dáár, ter plekke begint hier.
+// startbeeld: alle punten in beeld, en zodra de locatie er is: waar jij bent
+// (naarLocatie, onderaan). Zonder locatie blijft het overzicht staan. De verkenner
+// zit achter ⌕ linksboven — vooraf verkennen begint dáár, ter plekke begint hier.
 map.fitBounds(L.latLngBounds(A.pois.map(p => p.coord)), { padding:[70,90], maxZoom:16 });
 
 /* ---------- thema-filters: aan/uit, alles staat standaard aan ---------- */
@@ -572,8 +572,8 @@ fNet.ondblclick = openGraaf;
 /* ---------- locatie ----------------------------------------------------
    Twee momenten: wie ergens stáát wil meteen zien wat er om hem heen is; wie
    thuis zit, zoekt zelf. Daarom haalt de app bij de start stil de locatie op
-   en zoomt ze daarop in als er verhalen in de buurt zijn. Ver van alle steden
-   blijft het overzicht staan, met een hint waar het dichtst is.            */
+   en begint dáár — altijd, ook als er (nog) geen verhalen in de buurt zijn.
+   Ver van alle steden krijg je een hint waar het dichtst is.               */
 let locMarker = null, locHint = false;   // locHint: er is al een locatiemelding getoond
 function naarLocatie(stil){
   if (!navigator.geolocation){ if (!stil) toast("Geolocatie niet beschikbaar"); return; }
@@ -586,7 +586,7 @@ function naarLocatie(stil){
       const dichtst = stedenMetInhoud().filter(p => p.kaart)
         .map(p => [map.distance(c, p.kaart.centrum), p]).sort((a,b) => a[0]-b[0])[0];
       const dichtbij = dichtst && dichtst[0] <= 20000;
-      if (dichtbij || !stil) map.setView(c, dichtbij ? 15 : 11, { animate: !stil });
+      map.setView(c, 15, { animate: !stil });
       if (!dichtbij && dichtst){
         locHint = true;
         toast("Je bent " + Math.round(dichtst[0]/1000) + " km van " + dichtst[1].naam +

@@ -41,8 +41,8 @@
     display:flex;align-items:center;gap:6px;transition:.15s;white-space:nowrap}
   .chip:hover{color:var(--tx);border-color:#3b4250}
   .chip.on{color:#0f1115;font-weight:600;border-color:transparent}
-  .chip.uit{opacity:.35;text-decoration:line-through;background:#0f1115cc}
-  .chip.uit i{opacity:.5}
+  .chip.uit{opacity:.45}
+  .chip.on i{color:inherit!important}
   .chip i{font-style:normal;font-size:12px}
   .chip,.tegel{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 
@@ -96,7 +96,7 @@
     display:flex;flex-direction:column;box-shadow:0 -10px 40px #0008;overscroll-behavior:contain}
   body.open #sheet{transform:translateY(calc(100% - var(--sheet-h)))}
   body.open.max #sheet{transform:none}
-  body.open:not(.max) #sheetScroll{overflow:hidden;touch-action:none}
+  body.open:not(.max) #sheetScroll{flex:0 0 calc(var(--sheet-h) - 24px)}
   #grip{padding:10px 0 6px;display:grid;place-items:center;cursor:grab;flex:0 0 auto;touch-action:none}
   #grip div{width:40px;height:5px;border-radius:3px;background:#39404e}
   #sheetScroll{overflow-y:auto;padding:0 16px calc(22px + env(safe-area-inset-bottom));flex:1}
@@ -255,7 +255,7 @@
     #sheet{left:auto;right:0;top:0;width:420px;height:100vh;border-radius:0;
       border-left:1px solid var(--line);border-top:none;transform:translateX(101%)}
     body.open #sheet{transform:none}
-    body.open:not(.max) #sheetScroll{overflow-y:auto;touch-action:auto}
+    body.open:not(.max) #sheetScroll{flex:1 1 auto}
     #fabs{bottom:20px}
     body.open #fabs{bottom:20px;right:436px}
     /* header stopt bij de zijbalk in plaats van eroverheen te lopen */
@@ -516,20 +516,36 @@ function chipsVolgen(){
   const b = map.getBounds();
   const inBeeld = new Set();
   A.pois.forEach(p => { if (b.contains(p.coord)) p.themas.forEach(t => inBeeld.add(t)); });
-  const alles = inBeeld.size === 0;
+  const alles = inBeeld.size === 0, solo = soloThema();
   [...document.getElementById("chips").children].forEach(c => {
     if (!c.dataset.k) return;
-    c.style.display = (alles || inBeeld.has(c.dataset.k)) ? "" : "none";
+    c.style.display = (alles || inBeeld.has(c.dataset.k) || c.dataset.k === solo) ? "" : "none";
   });
 }
 
+// staat er precies één thema aan, dan is dat het gekozen thema
+function soloThema(){
+  const aan = Object.keys(T).filter(k => filterAan[k]);
+  return aan.length === 1 ? aan[0] : null;
+}
+const chipVolgorde = [...chips.children];   // de oorspronkelijke volgorde, om te herstellen
 function verf(){
+  const solo = soloThema();
+  // rustig standaardbeeld: alles aan = neutrale chips. Eén thema gekozen: dat
+  // komt vooraan in zijn eigen kleur, de rest dimt.
   [...chips.children].forEach(c => {
     if (!c.dataset.k) return;
-    // rustig standaardbeeld: alles aan = neutrale chips. Alleen wie uitstaat valt op.
-    const aan = filterAan[c.dataset.k];
-    c.classList.toggle("uit", !aan);
+    const k = c.dataset.k;
+    c.classList.toggle("uit", !filterAan[k]);
+    c.classList.toggle("on", k === solo);
+    c.style.background = k === solo ? T[k].kleur : "";
   });
+  if (solo){
+    const el = chips.querySelector('.chip[data-k="' + solo + '"]');
+    const alles = document.getElementById("chipAlles");
+    chips.insertBefore(el, alles.nextSibling);
+    chips.scrollLeft = 0;
+  } else chipVolgorde.forEach(c => chips.appendChild(c));
   const allesAan = Object.values(filterAan).every(Boolean);
   document.getElementById("chipAlles").style.display = allesAan ? "none" : "";
   hertekenen();
@@ -601,10 +617,10 @@ const sheet = document.getElementById("sheet"), scroll = document.getElementById
 map.on("click", sluit);
 
 /* ---------- de standen van het paneel ------------------------------------
-   dicht / half / vol. Tik op de greep wisselt half en vol. Slepen werkt zoals
-   je verwacht: omhoog naar vol, omlaag naar half en daarna weg. In de stand
-   half scrolt de tekst niet — omhoog vegen maakt het paneel eerst vol. Op een
-   breed scherm is het paneel een zijbalk en is dit alles niet van toepassing. */
+   dicht / half / vol. De tekst scrolt in elke stand; de vorm verander je
+   alleen via de greep: tikken wisselt half en vol, slepen gaat omhoog naar
+   vol en omlaag naar half en daarna weg. Op een breed scherm is het paneel
+   een zijbalk en is dit alles niet van toepassing.                         */
 const mobiel = () => !matchMedia("(min-width:820px)").matches;
 function stand(){
   return !document.body.classList.contains("open") ? "dicht"
@@ -640,18 +656,14 @@ function kaartPas(){
 
 let sleep = null, netGesleept = false;
 sheet.addEventListener("pointerdown", e => {
-  if (!mobiel() || stand() === "dicht") return;
-  if (e.target.closest("a, button, .tab, input")) return;
-  sleep = { y0:e.clientY, t0:performance.now(), stand:stand(), opGrip:!!e.target.closest("#grip"),
-            scrollTop:scroll.scrollTop, actief:false, dy:0, id:e.pointerId };
+  if (!mobiel() || stand() === "dicht" || !e.target.closest("#grip")) return;
+  sleep = { y0:e.clientY, t0:performance.now(), stand:stand(), actief:false, dy:0, id:e.pointerId };
 });
 sheet.addEventListener("pointermove", e => {
   if (!sleep) return;
   const dy = e.clientY - sleep.y0;
   if (!sleep.actief){
     if (Math.abs(dy) < 8) return;
-    // in de stand vol mag je alleen slepen vanaf de greep, of omlaag als de tekst bovenaan staat
-    if (sleep.stand === "vol" && !sleep.opGrip && !(dy > 0 && sleep.scrollTop === 0)) { sleep = null; return; }
     sleep.actief = true;
     try { sheet.setPointerCapture(sleep.id); } catch (_) {}
     sheet.style.transition = "none";

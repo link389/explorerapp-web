@@ -470,6 +470,8 @@ function hertekenen(){
       .addTo(clusterLaag);
   });
 
+  chipsVolgen();
+
   const aan = mee.length, totaal = A.pois.length;
   const badge = document.getElementById("lodBadge");
   badge.textContent = aan < totaal ? aan + " van " + totaal + " punten" : "";
@@ -477,7 +479,8 @@ function hertekenen(){
 }
 map.on("zoomend moveend", hertekenen);
 
-// startbeeld: alle punten in beeld. De verkenner (zoeken, beginpunten) zit
+// startbeeld: alle punten in beeld, en daarna stil inzoomen op je eigen locatie
+// als daar verhalen in de buurt zijn (naarLocatie, onderaan). De verkenner zit
 // achter ⌕ linksboven — vooraf verkennen begint dáár, ter plekke begint hier.
 map.fitBounds(L.latLngBounds(A.pois.map(p => p.coord)), { padding:[70,90], maxZoom:16 });
 
@@ -504,6 +507,19 @@ const alles = document.createElement("button");
 alles.className = "chip"; alles.id = "chipAlles"; alles.textContent = "Alles";
 alles.onclick = () => { Object.keys(T).forEach(x => filterAan[x] = true); verf(); };
 chips.prepend(alles);   // vooraan, anders staat de reset buiten beeld op een telefoon
+
+// alleen de thema's van de pins die nu in beeld zijn; staat er niets in beeld,
+// dan zie je ze allemaal
+function chipsVolgen(){
+  const b = map.getBounds();
+  const inBeeld = new Set();
+  A.pois.forEach(p => { if (b.contains(p.coord)) p.themas.forEach(t => inBeeld.add(t)); });
+  const alles = inBeeld.size === 0;
+  [...document.getElementById("chips").children].forEach(c => {
+    if (!c.dataset.k) return;
+    c.style.display = (alles || inBeeld.has(c.dataset.k)) ? "" : "none";
+  });
+}
 
 function verf(){
   [...chips.children].forEach(c => {
@@ -553,23 +569,35 @@ fNet.addEventListener("pointerdown", startDruk);
 ["pointerup","pointerleave","pointercancel"].forEach(e => fNet.addEventListener(e, stopDruk));
 fNet.ondblclick = openGraaf;
 
-/* ---------- locatie ---------- */
-document.getElementById("fLoc").onclick = () => {
-  if (!navigator.geolocation) return toast("Geolocatie niet beschikbaar");
-  toast("Locatie zoeken…");
+/* ---------- locatie ----------------------------------------------------
+   Twee momenten: wie ergens stáát wil meteen zien wat er om hem heen is; wie
+   thuis zit, zoekt zelf. Daarom haalt de app bij de start stil de locatie op
+   en zoomt ze daarop in als er verhalen in de buurt zijn. Ver van alle steden
+   blijft het overzicht staan, met een hint waar het dichtst is.            */
+let locMarker = null, locHint = false;   // locHint: er is al een locatiemelding getoond
+function naarLocatie(stil){
+  if (!navigator.geolocation){ if (!stil) toast("Geolocatie niet beschikbaar"); return; }
+  if (!stil) toast("Locatie zoeken…");
   navigator.geolocation.getCurrentPosition(
     p => {
       const c = [p.coords.latitude, p.coords.longitude];
-      L.circleMarker(c,{radius:7,color:"#fff",weight:2,fillColor:"#3b82f6",fillOpacity:1}).addTo(map);
-      map.setView(c,16);
+      if (locMarker) map.removeLayer(locMarker);
+      locMarker = L.circleMarker(c,{radius:7,color:"#fff",weight:2,fillColor:"#3b82f6",fillOpacity:1}).addTo(map);
       const dichtst = stedenMetInhoud().filter(p => p.kaart)
         .map(p => [map.distance(c, p.kaart.centrum), p]).sort((a,b) => a[0]-b[0])[0];
-      toast(dichtst && dichtst[0] > 20000
-        ? "Je bent " + Math.round(dichtst[0]/1000) + " km van " + dichtst[1].naam + ", de dichtstbijzijnde stad met verhalen"
-        : "Gevonden");
+      const dichtbij = dichtst && dichtst[0] <= 20000;
+      if (dichtbij || !stil) map.setView(c, dichtbij ? 15 : 11, { animate: !stil });
+      if (!dichtbij && dichtst){
+        locHint = true;
+        toast("Je bent " + Math.round(dichtst[0]/1000) + " km van " + dichtst[1].naam +
+              ", de dichtstbijzijnde stad met verhalen");
+      }
+      else if (!stil) toast("Gevonden");
     },
-    () => toast("Locatie geweigerd of niet beschikbaar"));
-};
+    () => { if (!stil) toast("Locatie geweigerd of niet beschikbaar"); },
+    { timeout: 8000, maximumAge: 120000 });
+}
+document.getElementById("fLoc").onclick = () => naarLocatie(false);
 
 /* ---------- sheet ---------- */
 const sheet = document.getElementById("sheet"), scroll = document.getElementById("sheetScroll");
@@ -1149,7 +1177,8 @@ verf();   // eerste tekenbeurt: filters staan aan, dan clusteren
 document.getElementById("brandSub").textContent =
   stedenMetInhoud().map(p => p.naam).join(" · ") + " · proefdata";
 
-setTimeout(() => toast("Tik op een punt — of zoek een plaats of thema via ⌕ linksboven."), 700);
+naarLocatie(true);
+setTimeout(() => { if (!locHint) toast("Tik op een punt — of zoek een plaats of thema via ⌕ linksboven."); }, 700);
 } // einde start()
 
 const _d = document.createElement("script");

@@ -389,7 +389,7 @@ function zichtbaarVoorFilter(poi){
 
 function hertekenen(){
   const z = map.getZoom();
-  const maat = z < 13 ? 34 : z < 15 ? 40 : 46;
+  const maat = z < 13 ? 34 : z < 15 ? 40 : z < 18 ? 46 : 38;
   const straal = maat * 1.15;
   document.body.classList.toggle("ver", z < 14);
   clusterLaag.clearLayers();
@@ -443,10 +443,16 @@ function hertekenen(){
     el.onclick = e => {
       e.stopPropagation();
       const b = L.latLngBounds(g.leden.map(x => x.poi.coord));
+      // valt de groep op de maximale zoom nog niet uit elkaar (een plein vol
+      // beelden), dan toont een lijst wat erin zit — nooit vastlopen op een bol
+      const zMax = map.getMaxZoom();
+      const bij = map.getBoundsZoom(b, false, L.point(90, 110));
+      if (map.getZoom() >= zMax - 0.01 || (bij >= zMax && map.getZoom() >= zMax - 1))
+        return toonGroep(g.leden.map(x => x.poi));
       if (b.getNorth() === b.getSouth() && b.getEast() === b.getWest())
-        map.setView(b.getCenter(), Math.min(map.getZoom() + 3, 19));
+        map.setView(b.getCenter(), Math.min(map.getZoom() + 3, zMax));
       else
-        map.fitBounds(b, { padding:[90,110], maxZoom:19 });
+        map.fitBounds(b, { padding:[90,110], maxZoom:zMax });
     };
     L.marker(mid, { icon: L.divIcon({ html: el, className:"", iconSize:[0,0], iconAnchor:[0,0] }) })
       .addTo(clusterLaag);
@@ -978,6 +984,25 @@ document.querySelector(".brand").onclick = () => openZoek();
 function sc(label, v, kl){
   return '<div class="sc"><b>' + label + '<em>' + v + "</em></b>" +
          '<div class="bar"><i style="width:' + v + "%;background:" + kl + '"></i></div></div>';
+}
+
+/* ---------- een groep pins die niet meer uit elkaar valt ---------- */
+function toonGroep(pois){
+  huidig = null;
+  Object.values(markers).forEach(x => x.el.classList.remove("sel"));
+  toonPaneel("groep:" + pois.map(p => p.id).join(","));
+  const stad = plaatsById(plaatsVan(pois[0]));
+  scroll.innerHTML =
+    (stad ? schaalpad(stad.id, pois.length + " plekken bij elkaar") : "") +
+    "<h1>" + pois.length + " plekken op deze plek</h1>" +
+    '<div class="sub">Zo dicht bij elkaar dat de kaart ze niet meer los kan tonen. Kies er een.</div>' +
+    '<div class="areas">' + pois.slice().sort((a,b) => b.verhaal - a.verhaal).map(p =>
+      '<div class="area" data-go="' + p.id + '" style="border-left:3px solid ' + kleur(p) + '"><b>' + esc(p.naam) + "</b>" +
+      "<span>" + esc(p.glance) + "</span>" +
+      (p.jaar ? "<em>" + (p.jaar_circa ? "ca. " : "") + p.jaar + "</em>" : "") + "</div>").join("") + "</div>";
+  scroll.querySelectorAll("[data-go]").forEach(b => b.onclick = () => open(b.dataset.go));
+  scroll.querySelectorAll("[data-plaats]").forEach(b => b.onclick = () => focusPlaats(b.dataset.plaats));
+  scroll.scrollTop = 0;
 }
 
 /* ---------- gebiedsverhalen ---------- */

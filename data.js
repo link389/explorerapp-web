@@ -292,6 +292,29 @@ window.APP = {
         { titel: "Oeteldonk en Kruikenstad: waarom plaatsen anders heten met carnaval — Omroep Brabant", url: "https://www.omroepbrabant.nl/nieuws/4649441/oeteldonk-en-kruikenstad-dit-is-waarom-plaatsen-anders-heten-met-carnaval" },
         { titel: "Kruikezeiker — Wikipedia (NL)", url: "https://nl.wikipedia.org/wiki/Kruikezeiker" }
       ]
+    },
+
+    /* ---- Parliament Square — thema’s ---- */
+    standbeelden: {
+      label: "Wie krijgt een standbeeld",
+      kleur: "#9333ea",
+      icoon: "♟",
+      schaal: "stad",
+      plaats: "london",
+      glance: "Twaalf beelden op Parliament Square: van Victoriaanse premiers via een Amerikaan en een Zuid-Afrikaan naar Gandhi, Mandela en in 2018 de eerste vrouw.",
+      verhaal_tekst: "Parliament Square is in 1868 aangelegd naar een ontwerp van Charles Barry, de architect van het parlementsgebouw, om het verkeer te laten doorstromen; op de hoek van Great George Street en Bridge Street stond dat jaar het eerste verkeerslicht van London, met seinarmen in plaats van lampen. In 1950 gaf George Grey Wornum het plein zijn huidige vorm. Wie hier een beeld krijgt, zegt iets over wat het land wil onthouden. Het begon met [[beeld-canning|Canning]], in 1867 hierheen verhuisd, en de Victoriaanse premiers [[beeld-derby|Derby]], [[beeld-peel|Peel]], [[beeld-palmerston|Palmerston]] en [[beeld-disraeli|Disraeli]]. In 1920 kwam de eerste buitenlander, [[beeld-lincoln|Lincoln]], een Amerikaans geschenk; in 1956 [[beeld-smuts|Smuts]], op voorstel van Churchill; in 1973 [[beeld-churchill|Churchill]] zelf. Toen [[beeld-mandela|Mandela]] in 2007 werd onthuld, herinnerde hij aan een grap uit 1962: dat hier ooit een zwarte man naast Smuts zou staan. [[beeld-gandhi|Gandhi]] volgde in 2015, en in 2018 de eerste vrouw, [[beeld-fawcett|Millicent Fawcett]]. Twaalf beelden, anderhalve eeuw.",
+      elders: [],
+      bronnen: [
+        { titel: "Parliament Square — Wikipedia (EN)", url: "https://en.wikipedia.org/wiki/Parliament_Square" },
+        { titel: "10 Historic London Garden Squares… 2. Parliament Square — Exploring London", url: "https://exploring-london.com/2013/05/01/10-historic-london-garden-squares2-parliament-square/" },
+        { titel: "Parliament Square — Historic England (list entry 1001342)", url: "https://historicengland.org.uk/listing/the-list/list-entry/1001342" },
+        { titel: "Statue of George Canning, Parliament Square — Wikipedia (EN)", url: "https://en.wikipedia.org/wiki/Statue_of_George_Canning,_Parliament_Square" },
+        { titel: "The Dedication of the Living: Saint-Gaudens's Abraham Lincoln in Chicago and London — Journal of the Abraham Lincoln Association", url: "https://quod.lib.umich.edu/j/jala/2629860.0040.103/--dedication-of-the-living-augustus-saint-gaudenss-abraham?rgn=main%3Bview%3Dfulltext" },
+        { titel: "Statue of Jan Smuts, Parliament Square — Wikipedia (EN)", url: "https://en.wikipedia.org/wiki/Statue_of_Jan_Smuts,_Parliament_Square" },
+        { titel: "Statue of Winston Churchill, Parliament Square — Wikipedia (EN)", url: "https://en.wikipedia.org/wiki/Statue_of_Winston_Churchill,_Parliament_Square" },
+        { titel: "Mandela statue unveiled in London — CBC News", url: "https://www.cbc.ca/news/world/mandela-statue-unveiled-in-london-1.670766" },
+        { titel: "Statue of Millicent Fawcett — Wikipedia (EN)", url: "https://en.wikipedia.org/wiki/Statue_of_Millicent_Fawcett" }
+      ]
     }
   },
 
@@ -1934,6 +1957,453 @@ window.APP = {
         { titel: "Inwoners brengen met Spoorpark Central Park naar Tilburg — inbrabant.nl", url: "https://www.inbrabant.nl/bibliotheek/spoorpark-tilburg" },
         { titel: "De Kempentoren — Uitkijktorens.nl", url: "https://uitkijktorens.nl/uitkijktorens/de-kempentoren/" },
         { titel: "Spoorpark Tilburg: wat kun je er zien en doen? — Steden.net", url: "https://www.steden.net/nederland/tilburg/spoorpark/" }
+      ]
+    },
+
+    /* ---- Parliament Square — plekken ---- */
+    {
+      id: "beeld-churchill",
+      plaats: "london",
+      jaar: 1973,
+      niveau: 2,
+      naam: "Standbeeld Winston Churchill",
+      ondertitel: "Bronzen standbeeld · 1973 · Ivor Roberts-Jones · Grade II",
+      coord: [51.50083, -0.12642],
+      coord_bron: "handmatig",
+      themas: ["standbeelden", "kroon"],
+      roem: 70,
+      verhaal: 75,
+      esthetiek: 75,
+      afbeelding: "Winston Churchill statue, Parliament Square, London.JPG",
+      bijschrift: "Churchill in marine-overjas, leunend op zijn stok, met de blik op het parlement.",
+      glance: "3,66 meter Churchill in overjas op de plek die hij zelf had aangewezen — en nee, er staat geen stroom op tegen de duiven.",
+      waarom_hier: "Churchill wees in de jaren vijftig zelf deze hoek van het plein aan als de plek 'where my statue will go': de noordoosthoek, recht tegenover een van de ingangen van het parlement.",
+      verhaal_tekst: "Winston Churchill was premier van 1940 tot 1945 en van 1951 tot 1955; de oorlog leidde hij deels vanuit [[churchill-war-rooms|een kelder onder Whitehall]], vlakbij. Al in de jaren vijftig wees hij op dit plein een plek aan met de woorden 'where my statue will go'. Het kwam er: op 1 november 1973 trok zijn weduwe Clementine het doek weg, met de zittende premier en vier oud-premiers erbij; koningin Elizabeth II hield een toespraak. Ivor Roberts-Jones maakte hem 3,66 meter hoog op een sokkel van 2,44 meter: marine-overjas, geen hoed, leunend op een stok, de blik op het parlement. De commissie vond het eerste model boven de ogen op Mussolini lijken; Roberts-Jones maakte het voorhoofd lager. Sinds 24 januari 2008 is het beeld beschermd (Grade II). Op 1 mei 2000 kreeg het een hanenkam van graszoden en rode verf uit de mond; in juni 2020 verdween het tijdelijk achter een houten kist. Dat er stroom op staat tegen duiven is een stadsmythe: het blijft schoon omdat er geen bomen overheen hangen.",
+      let_hierop: "Kijk waar hij naar kijkt: recht op het parlementsgebouw. En let op de jas — een marine-overjas uit de oorlogsjaren, zonder hoed, de rechterhand op de stok.",
+      praktisch: "Parliament Square, Westminster, noordoosthoek. Vrij toegankelijk.",
+      onbevestigd: "Coördinaat is omgerekend uit de National Grid Reference TQ 30143 79652 van de monumentenlijst en nog niet tegen OpenStreetMap gecontroleerd (verwachte nauwkeurigheid ca. 10 m). Bestandsnaam van de afbeelding is gezien in een zoekresultaat maar de licentie is niet apart nagekeken.",
+      verbindingen: [
+        { id: "beeld-lloyd-george", relatie: "zijn buurman aan de noordkant van het plein" },
+        { id: "beeld-smuts", relatie: "Churchill stelde in 1951 zelf dit beeld van zijn vriend voor" },
+        { id: "churchill-war-rooms", relatie: "de kelder waar hij de oorlog leidde" },
+        { id: "big-ben", relatie: "het gebouw waar het beeld naar kijkt" }
+      ],
+      bronnen: [
+        { titel: "Statue of Winston Churchill, Parliament Square — Wikipedia (EN)", url: "https://en.wikipedia.org/wiki/Statue_of_Winston_Churchill,_Parliament_Square" },
+        { titel: "Statue of Sir Winston Churchill — Historic England (list entry 1392374)", url: "https://historicengland.org.uk/listing/the-list/list-entry/1392374" },
+        { titel: "Statue of Sir Winston Churchill, City of Westminster — British Listed Buildings", url: "https://britishlistedbuildings.co.uk/101392374-statue-of-sir-winston-churchill-st-jamess-ward" },
+        { titel: "Treasures of London – Winston Churchill statue, Parliament Square — Exploring London", url: "https://exploring-london.com/2015/01/23/treasures-of-london-winston-churchill/" },
+        { titel: "The Statue of Winston Churchill, Parliament Square — Stuff About London", url: "https://stuffaboutlondon.co.uk/stuff-about-london-blog/the-statue-of-winston-churchill-parliament-square/" },
+        { titel: "Five things about London that simply aren't true — Time Out", url: "https://www.timeout.com/london/blog/five-things-about-london-that-simply-arent-true-020817" },
+        { titel: "The defacing of Churchill's statue — OUP Blog", url: "https://blog.oup.com/2020/09/the-defacing-of-churchills-statue/" },
+        { titel: "Boris Johnson on the boarded-up Churchill statue — Axios", url: "https://www.axios.com/2020/06/12/boris-johnson-winston-churchill-statue-george-floyd-protests" },
+        { titel: "Churchill War Rooms — Wikipedia (EN)", url: "https://en.wikipedia.org/wiki/Churchill_War_Rooms" }
+      ]
+    },
+
+    {
+      id: "beeld-fawcett",
+      plaats: "london",
+      jaar: 2018,
+      niveau: 2,
+      naam: "Standbeeld Millicent Fawcett",
+      ondertitel: "Bronzen standbeeld · 2018 · Gillian Wearing",
+      coord: [51.50072, -0.12722],
+      coord_bron: "handmatig",
+      themas: ["standbeelden"],
+      roem: 35,
+      verhaal: 85,
+      esthetiek: 70,
+      afbeelding: "Millicent Garrett Fawcett (Parliament Square, Londres).jpg",
+      bijschrift: "Fawcett met de banier 'Courage calls to courage everywhere'; op de sokkel 59 medestrijders.",
+      glance: "Na 150 jaar de eerste vrouw op het plein, gemaakt door een vrouw: een banier met haar eigen woorden en 59 gezichten op de sokkel.",
+      waarom_hier: "Een petitie uit 2016 vroeg om één vrouw tussen de elf mannen op het plein voor het parlement, precies honderd jaar nadat vrouwen daar stemrecht kregen. Ze staat aan de westkant, tussen Palmerston en Gandhi.",
+      verhaal_tekst: "Millicent Garrett Fawcett (1847–1929) leidde een halve eeuw de strijd voor vrouwenkiesrecht langs wettelijke weg: van 1907 tot 1919 was ze voorzitter van de National Union of Women's Suffrage Societies, en van de gewelddadige methoden van de suffragettes rond de Pankhursts moest ze niets hebben. In 1918 kregen vrouwen boven de dertig stemrecht; honderd jaar later stond hier voor het eerst een vrouw. Caroline Criado Perez begon de campagne op Internationale Vrouwendag 2016, burgemeester Sadiq Khan gaf de opdracht en Gillian Wearing maakte het beeld — het eerste van een vrouw én door een vrouw, onthuld op 24 april 2018. Wat je ziet: Fawcett op vijftigjarige leeftijd met een banier, 'Courage calls to courage everywhere', haar eigen woorden uit de toespraak na de dood van Emily Wilding Davison. Rondom de sokkel 59 namen en gezichten van medestrijders — Davison, de Pankhursts, Sophia Duleep Singh — en één leeg vak.",
+      let_hierop: "Lees de banier en loop dan om de sokkel: 59 gezichten, in graniet geëtst, met één leeg vak. Zoek de broche op haar borst — die heeft ze echt gedragen.",
+      praktisch: "Parliament Square, Westminster, westkant. Vrij toegankelijk.",
+      onbevestigd: "Coördinaat is afgeleid uit een secundaire bron (Wikipedia-infobox, 51°30′02.6″N 0°07′38.0″W) en nog niet tegen OpenStreetMap gecontroleerd. Bestandsnaam van de afbeelding is gezien in een zoekresultaat maar de licentie is niet apart nagekeken. Het jaar van Davisons dood is hier weggelaten omdat de gebruikte bronnen het niet noemen.",
+      verbindingen: [
+        { id: "beeld-gandhi", relatie: "staat aan haar linkerkant" },
+        { id: "beeld-palmerston", relatie: "staat aan haar rechterkant — 142 jaar ouder" },
+        { id: "big-ben", relatie: "het parlement dat in 1918 vrouwen stemrecht gaf" }
+      ],
+      bronnen: [
+        { titel: "Statue of Millicent Fawcett — Wikipedia (EN)", url: "https://en.wikipedia.org/wiki/Statue_of_Millicent_Fawcett" },
+        { titel: "Millicent Fawcett: A statue to suffrage — University of Sheffield", url: "https://sheffield.ac.uk/research/statue-suffrage" },
+        { titel: "10 fascinating women engraved on the Millicent Fawcett statue plinth — Stylist", url: "https://www.stylist.co.uk/visible-women/millicent-fawcett-statue-parliament-square-plinth-who-suffragettes-suffragists/203111" },
+        { titel: "Historic statue of suffragist leader unveiled — London City Hall", url: "https://www.london.gov.uk/press-releases/mayoral/historic-statue-of-suffragist-leader-unveiled" },
+        { titel: "Millicent Fawcett: A statue of a woman where only men stood before — CNN", url: "https://www.cnn.com/2018/04/24/opinions/millicent-fawcett-statue-caroline-criado-perez-intl" },
+        { titel: "Gillian Wearing's Statue of Suffragist Millicent Fawcett Unveiled Outside Parliament — Frieze", url: "https://www.frieze.com/article/gillian-wearings-statue-suffragist-millicent-fawcett-unveiled-outside-parliament" },
+        { titel: "Gillian Wearing interview — Waldemar Januszczak", url: "https://waldemar.tv/2018/05/gillian-wearing-interview-former-yba-bringing-statue-millicent-fawcett-parliament-square/" },
+        { titel: "Dame Millicent Garrett Fawcett — Britannica", url: "https://www.britannica.com/biography/Millicent-Fawcett" },
+        { titel: "Millicent Fawcett: Suffragist, not Suffragette — London Museum", url: "https://www.londonmuseum.org.uk/collections/london-stories/millicent-fawcett-suffragist-not-suffragette/" },
+        { titel: "Women's suffrage campaigners: Millicent Fawcett — UK Parliament", url: "https://www.parliament.uk/about/living-heritage/transformingsociety/electionsvoting/womenvote/parliamentary-collections/speakers-conference/millicent-fawcett/" }
+      ]
+    },
+
+    {
+      id: "beeld-palmerston",
+      plaats: "london",
+      jaar: 1876,
+      niveau: 2,
+      naam: "Standbeeld Lord Palmerston",
+      ondertitel: "Bronzen standbeeld · 1876 · Thomas Woolner · Grade II",
+      coord: [51.50091, -0.12709],
+      coord_bron: "handmatig",
+      themas: ["standbeelden", "kroon"],
+      roem: 20,
+      verhaal: 80,
+      esthetiek: 65,
+      afbeelding: null,
+      glance: "Bijna niemand kent hem nog, maar dit was misschien de eerste echt populaire premier van het land — en de man van de kanonneerbootdiplomatie.",
+      waarom_hier: "Palmerston stierf in 1865 als premier, de eerste sinds Canning die in functie overleed; elf jaar later kreeg hij zijn plek aan de noordkant van het plein voor het parlement waar hij bijna zestig jaar zat.",
+      verhaal_tekst: "Henry John Temple, derde Viscount Palmerston (1784–1865), was twee keer premier: van 6 februari 1855 tot 19 februari 1858 en van 12 juni 1859 tot zijn dood. Zijn faam komt van zijn jaren als minister van Buitenlandse Zaken. Hij hielp België (1830–31) en Griekenland (1832) aan hun onafhankelijkheid, en stuurde in januari 1850 een vlooteskader naar de Griekse kust om schadevergoeding af te dwingen voor één Britse onderdaan, Don Pacifico — het schoolvoorbeeld van kanonneerbootdiplomatie. In het Lagerhuis verdedigde hij dat met 'Civis Romanus sum': een Brit moest overal op de sterke arm van Engeland kunnen rekenen. Hij was de eerste grote politicus die de pers gebruikte om een aanhang op te bouwen, misschien de eerste echt populaire premier. Op 18 oktober 1865 stierf hij in functie, tachtig jaar oud — de eerste sinds Canning in 1827 — en kreeg een staatsbegrafenis in [[westminster-abbey|Westminster Abbey]]. The Times schreef dat geen staatsman Engeland ooit zo waarachtig had vertegenwoordigd. Thomas Woolner goot hem in 1876 in brons, op een granieten sokkel van E. M. Barry.",
+      let_hierop: "Op de sokkel staat alleen 'Viscount Palmerston', voor en achter — geen jaartal, geen ambt: in 1876 hoefde niemand uitgelegd te krijgen wie dit was. Onderaan het brons de signatuur van Woolner en de gieterij Masefield & Co, Chelsea.",
+      praktisch: "Parliament Square, Westminster, westelijk einde van de noordkant. Vrij toegankelijk.",
+      onbevestigd: "Coördinaat is afgeleid uit een secundaire bron (Wikipedia-infobox) en nog niet tegen OpenStreetMap gecontroleerd. Nog geen gecontroleerde vrije afbeelding. Dat hij de láátste premier was die in functie stierf, is in de gebruikte bronnen niet als zodanig gezegd en daarom weggelaten. De precieze onthullingsdatum in 1876 is niet gevonden.",
+      verbindingen: [
+        { id: "beeld-smuts", relatie: "staat ernaast, aan de noordkant" },
+        { id: "beeld-fawcett", relatie: "aan zijn andere zijde, 142 jaar jonger" },
+        { id: "beeld-derby", relatie: "tijdgenoot en tegenstander: drie keer premier tussen zijn twee termijnen door" },
+        { id: "westminster-abbey", relatie: "waar hij na een staatsbegrafenis ligt" }
+      ],
+      bronnen: [
+        { titel: "Statue of Lord Palmerston, Parliament Square — Wikipedia (EN)", url: "https://en.wikipedia.org/wiki/Statue_of_Lord_Palmerston,_Parliament_Square" },
+        { titel: "Statue of Henry John Temple, Viscount Palmerston — Historic England (list entry 1265876)", url: "https://historicengland.org.uk/listing/the-list/list-entry/1265876" },
+        { titel: "Viscount Palmerston by Thomas Woolner — Victorian Web", url: "https://victorianweb.org/sculpture/woolner/53.html" },
+        { titel: "Henry John Temple, 3rd Viscount Palmerston — Wikipedia (EN)", url: "https://en.wikipedia.org/wiki/Henry_John_Temple,_3rd_Viscount_Palmerston" },
+        { titel: "Henry John Temple, 3rd Viscount Palmerston — Britannica", url: "https://www.britannica.com/biography/Henry-John-Temple-3rd-Viscount-Palmerston" },
+        { titel: "Lord Palmerston — Historic UK", url: "https://www.historic-uk.com/HistoryUK/HistoryofBritain/Lord-Palmerston/" },
+        { titel: "Don Pacifico Affair — Britannica", url: "https://www.britannica.com/event/Don-Pacifico-affair" },
+        { titel: "Lord Palmerston and the 'civis Romanus sum' principle — History & Policy", url: "https://historyandpolicy.org/lord-palmerston-and-the-civis-romanus-sum-principle/" },
+        { titel: "Lord Palmerston and Tiverton: Politics, Celebrity and Memory in Victorian Britain — Transactions of the Royal Historical Society", url: "https://www.cambridge.org/core/journals/transactions-of-the-royal-historical-society/article/lord-palmerston-and-tiverton-politics-celebrity-and-memory-in-victorian-britain/C8CE935F2510B53E57A34C14C7894640" },
+        { titel: "Prime Ministers' Funerals — The History of Parliament", url: "https://historyofparliament.com/2013/04/16/prime-ministers-funerals/" },
+        { titel: "12 'commoners' who had ceremonial state funerals — Sky History", url: "https://www.history.co.uk/articles/commoners-who-had-state-funerals" },
+        { titel: "Henry Temple, Viscount Palmerston — Westminster Abbey", url: "https://www.westminster-abbey.org/abbey-commemorations/commemorations/henry-temple-viscount-palmerston" }
+      ]
+    },
+
+    {
+      id: "beeld-lloyd-george",
+      plaats: "london",
+      jaar: 2007,
+      niveau: 3,
+      naam: "Standbeeld David Lloyd George",
+      ondertitel: "Bronzen standbeeld · 2007 · Glynn Williams",
+      coord: [51.50078, -0.12671],
+      coord_bron: "handmatig",
+      themas: ["standbeelden", "kroon"],
+      roem: 25,
+      verhaal: 55,
+      esthetiek: 65,
+      afbeelding: null,
+      glance: "De premier van de Eerste Wereldoorlog, met opwaaiende cape, op een sokkel van Welshe leisteen — pas in 2007, 85 jaar na zijn aftreden.",
+      waarom_hier: "Hij staat aan de noordkant tussen Churchill en Smuts: de premier van de ene wereldoorlog naast die van de andere, op een sokkel van steen uit zijn eigen Noord-Wales.",
+      verhaal_tekst: "David Lloyd George was premier van 1916 tot 1922, de eerste Welshman op die post. Als minister van Financiën bracht hij in 1909 de 'People's Budget', belastingen voor sociale voorzieningen; de afwijzing door het Hogerhuis liep uit op een grondwetscrisis en de Parliament Act van 1911. Hij leidde het land door de tweede helft van de Eerste Wereldoorlog en was in Versailles een van de drie grote onderhandelaars. Toch stond hij hier pas in 2007. Het beeld van 2,4 meter werd betaald door de David Lloyd George Statue Appeal, een fonds dat de prins van Wales steunde, en op 25 oktober 2007 onthuld door prins Charles en de hertogin van Cornwall. Glynn Williams zette hem in pak met open jasje, vest en zijn kenmerkende vlinderdas, de hoed in de rechterhand, en een cape die achter hem opwaait alsof er een windvlaag staat. De sokkel is leisteen uit de Penrhyn-groeve in Noord-Wales. John Pilger en Denis Halliday protesteerden: onder Lloyd George bombardeerde Groot-Brittannië Afghanistan, Irak, Egypte en Iran.",
+      let_hierop: "Kijk naar de cape: hij waait naar achteren alsof de man tegen de wind in loopt. En naar de sokkel — donkere leisteen, anders dan het graniet van de buren.",
+      praktisch: "Parliament Square, Westminster, noordkant. Vrij toegankelijk.",
+      onbevestigd: "Coördinaat is afgeleid uit een secundaire bron (Wikipedia-infobox) en nog niet tegen OpenStreetMap gecontroleerd. Nog geen gecontroleerde vrije afbeelding.",
+      verbindingen: [
+        { id: "beeld-churchill", relatie: "zijn buurman aan de ene kant" },
+        { id: "beeld-smuts", relatie: "zijn buurman aan de andere kant, uit hetzelfde oorlogskabinet" },
+        { id: "big-ben", relatie: "het parlement waar zijn begroting van 1909 een crisis ontketende" }
+      ],
+      bronnen: [
+        { titel: "Statue of David Lloyd George, Parliament Square — Wikipedia (EN)", url: "https://en.wikipedia.org/wiki/Statue_of_David_Lloyd_George,_Parliament_Square" },
+        { titel: "Speech by HRH The Prince of Wales at the unveiling of a statue of David Lloyd George — The Royal Family", url: "https://www.royal.uk/clarencehouse/speech/speech-hrh-prince-wales-unveiling-statue-dedicated-former-british-prime-minister-david-lloyd" },
+        { titel: "David Lloyd George — Britannica", url: "https://www.britannica.com/biography/David-Lloyd-George" },
+        { titel: "David Lloyd George — Wikipedia (EN)", url: "https://en.wikipedia.org/wiki/David_Lloyd_George" },
+        { titel: "David Lloyd George — New World Encyclopedia", url: "https://www.newworldencyclopedia.org/entry/David_Lloyd_George" },
+        { titel: "Statue of Jan Smuts, Parliament Square — Wikipedia (EN)", url: "https://en.wikipedia.org/wiki/Statue_of_Jan_Smuts,_Parliament_Square" }
+      ]
+    },
+
+    {
+      id: "beeld-smuts",
+      plaats: "london",
+      jaar: 1956,
+      niveau: 3,
+      naam: "Standbeeld Jan Smuts",
+      ondertitel: "Bronzen standbeeld · 1956 · Jacob Epstein · Grade II",
+      coord: [51.50087, -0.12691],
+      coord_bron: "handmatig",
+      themas: ["standbeelden", "kroon"],
+      roem: 20,
+      verhaal: 78,
+      esthetiek: 65,
+      afbeelding: "Jan Smuts statue.JPG",
+      bijschrift: "Smuts in veldmaarschalksuniform, voorovergebogen 'alsof hij schaatst', door Jacob Epstein.",
+      glance: "Een Zuid-Afrikaanse premier tussen de Britse: Boerengeneraal, Brits veldmaarschalk, en door Churchill hier neergezet.",
+      waarom_hier: "Churchill stelde het beeld in 1951 zelf voor, voor de vriend uit twee oorlogskabinetten. Het staat aan de noordkant, tussen Palmerston en Lloyd George.",
+      verhaal_tekst: "Jan Smuts was premier van Zuid-Afrika van 1919 tot 1924 en van 1939 tot 1948 — en staat hier tussen Britse premiers. Hij had in de Boerenoorlog tegen de Britten gevochten, zat in de Eerste Wereldoorlog in het Imperial War Cabinet, geldt als een van de architecten van de Volkenbond en ondertekende in 1945 het Handvest van de Verenigde Naties: de enige die onder beide oprichtingsdocumenten zijn handtekening zette. Op 28 mei 1941 werd hij veldmaarschalk in het Britse leger, als eerste Zuid-Afrikaan. Na zijn dood in september 1950 stelde Churchill in 1951 voor hem hier een beeld te geven; op 7 november 1956 onthulde Speaker William Morrison het, omdat Churchill te ziek was. Jacob Epstein zette hem in uniform, voorovergebogen met het linkerbeen vooruit, alsof hij loopt; toeschouwers vonden het op schaatsen lijken en Robert Brand noemde het 'simply ghastly'. De sokkel is Zuid-Afrikaans graniet. Smuts' steun aan rassenscheiding thuis leverde de bouwstenen voor de apartheid — de reden dat [[beeld-mandela|Mandela]] in 2007 juist hem noemde.",
+      let_hierop: "Kijk van opzij: het hele lichaam hangt naar voren, linkerbeen vooruit, handen op de rug — de 'schaatser'. Op de sokkel: JAN CHRISTIAN SMUTS 1870–1950.",
+      praktisch: "Parliament Square, Westminster, noordkant. Vrij toegankelijk.",
+      onbevestigd: "Coördinaat is afgeleid uit een secundaire bron (Wikipedia-infobox) en nog niet tegen OpenStreetMap gecontroleerd. Bestandsnaam van de afbeelding is gezien in een zoekresultaat maar de licentie is niet apart nagekeken. 'Handen op de rug' is een lezing van de foto's, niet van een bron.",
+      verbindingen: [
+        { id: "beeld-palmerston", relatie: "staat ernaast, aan de noordkant" },
+        { id: "beeld-lloyd-george", relatie: "staat aan zijn andere kant; samen in het oorlogskabinet van 1917" },
+        { id: "beeld-churchill", relatie: "de vriend die dit beeld voorstelde" },
+        { id: "beeld-mandela", relatie: "de zwarte man die volgens een grap uit 1962 ooit naast hem zou staan" }
+      ],
+      bronnen: [
+        { titel: "Statue of Jan Smuts, Parliament Square — Wikipedia (EN)", url: "https://en.wikipedia.org/wiki/Statue_of_Jan_Smuts,_Parliament_Square" },
+        { titel: "Statue of Field Marshal Jan Smuts — Historic England (list entry 1226373)", url: "https://historicengland.org.uk/listing/the-list/list-entry/1226373" },
+        { titel: "Jan Smuts — Wikipedia (EN)", url: "https://en.wikipedia.org/wiki/Jan_Smuts" },
+        { titel: "The South African Footprint in Parliament Square, London — The Heritage Portal", url: "https://www.theheritageportal.co.za/article/south-african-footprint-parliament-square-london" },
+        { titel: "Mandela statue unveiled in London — CBC News", url: "https://www.cbc.ca/news/world/mandela-statue-unveiled-in-london-1.670766" }
+      ]
+    },
+
+    {
+      id: "beeld-derby",
+      plaats: "london",
+      jaar: 1874,
+      niveau: 3,
+      naam: "Standbeeld Earl of Derby",
+      ondertitel: "Bronzen standbeeld · 1874 · Matthew Noble · Grade II",
+      coord: [51.50081, -0.12731],
+      coord_bron: "handmatig",
+      themas: ["standbeelden", "kroon"],
+      roem: 10,
+      verhaal: 50,
+      esthetiek: 65,
+      afbeelding: null,
+      glance: "Drie keer premier, 22 jaar partijleider, en vier bronzen reliëfs op de sokkel die zijn loopbaan vertellen — onthuld door Disraeli.",
+      waarom_hier: "Derby was de langstzittende leider van de Conservatieven; vijf jaar na zijn dood zette zijn opvolger Disraeli hem hier neer, aan de westkant van het plein.",
+      verhaal_tekst: "Edward Smith-Stanley, veertiende graaf van Derby (1799–1869), leidde de Conservatieven van 1846 tot 1868 — 22 jaar, langer dan wie ook — en was drie keer premier: in 1852, in 1858–59 en in 1866–68, samen nog geen vier jaar. Britannica noemt hem een van de grootste redenaars die het Britse parlement gekend heeft. Onder hem verdween de uitsluiting van joden uit het parlement en ging het bestuur van India van de East India Company over naar de staat. Matthew Noble maakte het beeld; het werd op 11 juli 1874 onthuld door zijn opvolger als partijleider en premier, [[beeld-disraeli|Benjamin Disraeli]]. De hoge sokkel van rood graniet draagt vier bronzen reliëfs met scènes uit zijn loopbaan, gemaakt door Nobles assistent Horace Montford: het Lagerhuis in 1833, de installatie als kanselier van de universiteit van Oxford in 1853, het hulpcomité voor de katoencrisis in Manchester in 1865 en een kabinetsberaad in 1867. Derby was geboren op Knowsley in Lancashire — de katoencrisis was zijn eigen streek.",
+      let_hierop: "Loop om de sokkel en bekijk de vier reliëfs: een parlementsdebat, een academische plechtigheid, een vergadering in Manchester, een kabinetsberaad. Een loopbaan in vier panelen.",
+      praktisch: "Parliament Square, Westminster, westkant. Vrij toegankelijk.",
+      onbevestigd: "Coördinaat is afgeleid uit een secundaire bron met slechts vier decimalen (Wikipedia-infobox, 51.5008 / -0.1273; onzekerheid ca. 10 m) en nog niet tegen OpenStreetMap gecontroleerd. Nog geen gecontroleerde vrije afbeelding.",
+      verbindingen: [
+        { id: "beeld-disraeli", relatie: "onthulde dit beeld en volgde hem op als partijleider" },
+        { id: "beeld-palmerston", relatie: "zijn grote tegenstander: Derby's drie termijnen vielen rond die van Palmerston" },
+        { id: "beeld-peel", relatie: "van dezelfde beeldhouwer, Matthew Noble" }
+      ],
+      bronnen: [
+        { titel: "Statue of the Earl of Derby, Parliament Square — Wikipedia (EN)", url: "https://en.wikipedia.org/wiki/Statue_of_the_Earl_of_Derby,_Parliament_Square" },
+        { titel: "Edward George Geoffrey Smith Stanley, Lord Derby by Matthew Noble — Victorian Web", url: "https://victorianweb.org/sculpture/noble/3.html" },
+        { titel: "Parliament Square statues — Bob Speel", url: "http://www.speel.me.uk/sculptlondon/parliamentsq.htm" },
+        { titel: "Edward Smith-Stanley, 14th Earl of Derby — Wikipedia (EN)", url: "https://en.wikipedia.org/wiki/Edward_Smith-Stanley,_14th_Earl_of_Derby" },
+        { titel: "Edward Stanley, 14th earl of Derby — Britannica", url: "https://www.britannica.com/biography/Edward-George-Geoffrey-Smith-Stanley-14th-earl-of-Derby" },
+        { titel: "Henry John Temple, 3rd Viscount Palmerston — Wikipedia (EN)", url: "https://en.wikipedia.org/wiki/Henry_John_Temple,_3rd_Viscount_Palmerston" }
+      ]
+    },
+
+    {
+      id: "beeld-disraeli",
+      plaats: "london",
+      jaar: 1883,
+      niveau: 3,
+      naam: "Standbeeld Benjamin Disraeli",
+      ondertitel: "Bronzen standbeeld · 1883 · Mario Raggi · Grade II",
+      coord: [51.50064, -0.12731],
+      coord_bron: "handmatig",
+      themas: ["standbeelden", "kroon"],
+      roem: 25,
+      verhaal: 50,
+      esthetiek: 65,
+      afbeelding: "Benjamin Disraeli statue, Parliament Square, London.jpg",
+      bijschrift: "Disraeli in de mantel van graaf van Beaconsfield, door Mario Raggi (1883).",
+      glance: "Victoria's favoriete premier in gravenmantel, onthuld op de dag die Primrose Day werd — met sleutelbloemen aan zijn voeten tot in de jaren twintig.",
+      waarom_hier: "Zijn aanhangers onthulden hem op de tweede sterfdag, aan de westkant van het plein, in de rij van Victoriaanse premiers, vlak bij Derby, de leider die hij zelf hier had neergezet.",
+      verhaal_tekst: "Benjamin Disraeli (1804–1881) was twee keer premier, in 1868 en van 1874 tot 1880, en tot nu toe de enige Britse premier van joodse afkomst. Hij gaf de Conservatieve Partij haar moderne vorm en raakte bevriend met koningin Victoria, die hem in 1876 tot graaf van Beaconsfield verhief. Mario Raggi zette hem hier in de mantel van die graaf, op een sokkel van rood graniet; het brons werd gegoten door H. Young & Co in Pimlico. Het beeld werd onthuld op 19 april 1883, precies twee jaar na zijn dood, door Sir Stafford Northcote. Die datum werd Primrose Day: tot in de jaren twintig legden aanhangers elk jaar sleutelbloemen bij zijn graf en bij dit beeld. Hij staat aan de westkant van het plein, in de rij Victoriaanse premiers, vlak bij [[beeld-derby|Derby]], de partijleider die hij in 1868 opvolgde en wiens beeld hij in 1874 zelf onthulde.",
+      let_hierop: "Kijk naar de kleding: geen jas maar een lange ceremoniële mantel — de gravenmantel van Beaconsfield, niet het pak van de politicus. Kom op 19 april en kijk of er nog iemand sleutelbloemen legt.",
+      praktisch: "Parliament Square, Westminster, westkant. Vrij toegankelijk.",
+      onbevestigd: "Coördinaat is afgeleid uit een secundaire bron (Wikipedia-infobox) en nog niet tegen OpenStreetMap gecontroleerd. Bestandsnaam van de afbeelding is gezien in een zoekresultaat maar de licentie is niet apart nagekeken.",
+      verbindingen: [
+        { id: "beeld-derby", relatie: "zijn leider, wiens beeld hij in 1874 onthulde" },
+        { id: "beeld-palmerston", relatie: "de andere kant van het politieke spectrum, hetzelfde plein" },
+        { id: "beeld-peel", relatie: "zelfde westkant, zelfde eeuw" }
+      ],
+      bronnen: [
+        { titel: "Statue of Benjamin Disraeli, Parliament Square — Wikipedia (EN)", url: "https://en.wikipedia.org/wiki/Statue_of_Benjamin_Disraeli,_Parliament_Square" },
+        { titel: "Statue of Benjamin Disraeli, Earl of Beaconsfield — Historic England (list entry 1226370)", url: "https://historicengland.org.uk/listing/the-list/list-entry/1226370" },
+        { titel: "Primrose Day — Wikipedia (EN)", url: "https://en.wikipedia.org/wiki/Primrose_Day" },
+        { titel: "Benjamin Disraeli — Britannica", url: "https://www.britannica.com/biography/Benjamin-Disraeli" },
+        { titel: "Benjamin Disraeli — Museum of the Prime Minister", url: "https://www.museumofpm.org/prime-ministers/benjamin-disraeli/" },
+        { titel: "Earl of Beaconsfield — Wikipedia (EN)", url: "https://en.wikipedia.org/wiki/Earl_of_Beaconsfield" },
+        { titel: "Statue of the Earl of Derby, Parliament Square — Wikipedia (EN)", url: "https://en.wikipedia.org/wiki/Statue_of_the_Earl_of_Derby,_Parliament_Square" }
+      ]
+    },
+
+    {
+      id: "beeld-peel",
+      plaats: "london",
+      jaar: 1876,
+      niveau: 3,
+      naam: "Standbeeld Sir Robert Peel",
+      ondertitel: "Bronzen standbeeld · 1876 · Matthew Noble · Grade II",
+      coord: [51.50046, -0.12735],
+      coord_bron: "handmatig",
+      themas: ["standbeelden", "kroon"],
+      roem: 25,
+      verhaal: 55,
+      esthetiek: 65,
+      afbeelding: null,
+      glance: "De man naar wie de 'bobbies' heten — en het tweede beeld op deze plek: het eerste werd twee keer afgekeurd en omgesmolten.",
+      waarom_hier: "Peel hoorde bij de eerste drie beelden van het plein; het huidige staat in de zuidwesthoek, met het gezicht naar Great George Street, op de plaats waar het afgekeurde beeld van Marochetti had gestaan.",
+      verhaal_tekst: "Sir Robert Peel (1788–1850) was premier van 1834 tot 1835 en van 1841 tot 1846, maar zijn blijvendste werk deed hij als minister van Binnenlandse Zaken: de Metropolitan Police Act van 1829 gaf London zijn eerste geordende politiekorps, en de agenten heten naar hem nog altijd 'bobbies'. In 1846 schafte hij de graanwetten af, die de invoer van graan beperkten. Op 29 juni 1850 viel hij van een pas gekocht paard dat, zonder dat hij het wist, bekendstond als bokkend; drie dagen later was hij dood. Zijn beeld hier heeft een voorgeschiedenis. Carlo Marochetti maakte er in 1853 een, dat te groot werd bevonden, en daarna een kleinere versie, ook afgekeurd — in 1868 verwijderd en omgesmolten. Matthew Noble maakte het huidige brons; hij stierf op 23 juni 1876, en het beeld werd in december van dat jaar zonder ceremonie geplaatst, als zijn laatste werk. Het staat op gepolijst rood graniet in de zuidwesthoek, met het gezicht naar Great George Street.",
+      let_hierop: "Vergelijk zijn sokkel met die van Derby en Disraeli: hetzelfde gepolijste rode graniet, maar hier zonder reliëfs. En let op de houding — een spreker in het Lagerhuis, niet een veldheer.",
+      praktisch: "Parliament Square, Westminster, zuidwesthoek. Vrij toegankelijk.",
+      onbevestigd: "Coördinaat (51°30′1.663″N 0°7′38.446″W) is afgeleid uit een secundaire bron in een zoekresultaat — vermoedelijk de Cast in Stone-database — en nog niet tegen OpenStreetMap gecontroleerd. Nog geen gecontroleerde vrije afbeelding. 'Een spreker, niet een veldheer' is een lezing van de foto's, niet van een bron.",
+      verbindingen: [
+        { id: "beeld-disraeli", relatie: "zelfde westkant, zelfde partij, andere generatie" },
+        { id: "beeld-mandela", relatie: "delen de zuidwesthoek van het plein" },
+        { id: "beeld-derby", relatie: "van dezelfde beeldhouwer, Matthew Noble" }
+      ],
+      bronnen: [
+        { titel: "Statue of Robert Peel, Parliament Square — Wikipedia (EN)", url: "https://en.wikipedia.org/wiki/Statue_of_Robert_Peel,_Parliament_Square" },
+        { titel: "Statue of Sir Robert Peel — Historic England (list entry 1265874)", url: "https://historicengland.org.uk/listing/the-list/list-entry/1265874" },
+        { titel: "Monument to Sir Robert Peel (1788–1850) — Art UK", url: "https://artuk.org/discover/artworks/monument-to-sir-robert-peel-17881850-302033" },
+        { titel: "Statue of Robert Peel, Parliament Square — Cast in Stone (University of Exeter)", url: "https://castinstone.exeter.ac.uk/database/s/en/item/920" },
+        { titel: "Robert Peel — Britannica", url: "https://www.britannica.com/biography/Robert-Peel" },
+        { titel: "Robert Peel — Wikipedia (EN)", url: "https://en.wikipedia.org/wiki/Robert_Peel" },
+        { titel: "Death of Sir Robert Peel — History Today", url: "https://www.historytoday.com/archive/death-sir-robert-peel" }
+      ]
+    },
+
+    {
+      id: "beeld-canning",
+      plaats: "london",
+      jaar: 1832,
+      niveau: 3,
+      naam: "Standbeeld George Canning",
+      ondertitel: "Bronzen standbeeld · 1832, hier sinds 1867 · Richard Westmacott · Grade II",
+      coord: [51.50101, -0.12775],
+      coord_bron: "handmatig",
+      themas: ["standbeelden", "kroon"],
+      roem: 10,
+      verhaal: 70,
+      esthetiek: 65,
+      afbeelding: null,
+      glance: "Het oudste beeld van het plein: premier voor 119 dagen, in Romeinse mantel met moderne broek — en het beeld doodde zijn maker's assistent.",
+      waarom_hier: "Het stond vanaf 1832 bij St Margaret's, met uitzicht op Old Palace Yard, en verhuisde in 1867 als eerste beeld naar het nieuwe plein. Het staat op Canning Green, het grasveld dat door de weg van het hoofdplein is gescheiden.",
+      verhaal_tekst: "George Canning werd op 10 april 1827 premier en stierf op 8 augustus van dat jaar, na 119 dagen — een van de kortste ambtstermijnen ooit. Hij had in januari kou gevat bij de begrafenis van de hertog van York. Zijn beeld is het oudste van het plein en heeft een eigen geschiedenis. Richard Westmacott maakte het: 3,56 meter brons, Canning in een lange mantel met een rol in de linkerhand, maar met een moderne broek en veterschoenen eronder. Tijdens het werk, op 28 december 1831 in Westmacotts gieterij aan Brewer Street in Pimlico, viel het beeld op zijn assistent Vincent Gahagan, die eronder omkwam. Op 2 mei 1832 werd het onthuld bij St Margaret's, met uitzicht op Old Palace Yard. In 1867 verhuisde het naar het nieuwe plein — als eerste beeld daar. Het staat op een granieten sokkel van 4,4 meter met alleen 'GEORGE CANNING', op Canning Green, het grasveld dat door de weg van het hoofdplein gescheiden is, met [[beeld-lincoln|Lincoln]] als buurman.",
+      let_hierop: "Kijk naar de voeten: onder de Romeinse mantel steken een negentiende-eeuwse broek en veterschoenen uit. En let op de hoogte van de sokkel — 4,4 meter, de hoogste van het plein.",
+      praktisch: "Canning Green, westzijde van Parliament Square (tussen het plein en het Supreme Court). Vrij toegankelijk.",
+      onbevestigd: "Coördinaat is afgeleid uit een secundaire bron (Wikipedia-infobox) en nog niet tegen OpenStreetMap gecontroleerd. Nog geen gecontroleerde vrije afbeelding. Over de datum van het ongeluk verschillen de bronnen: Wikipedia zegt 28 december 1831, London Remembers 4 januari 1832. Dat de sokkel de hoogste van het plein is, is een vergelijking van de gevonden maten, niet een uitspraak van een bron.",
+      verbindingen: [
+        { id: "beeld-lincoln", relatie: "delen Canning Green, los van het hoofdplein" },
+        { id: "beeld-palmerston", relatie: "na Canning de eerste premier die in functie stierf" },
+        { id: "westminster-abbey", relatie: "het beeld stond eerst bij St Margaret's, de kerk naast de abdij" }
+      ],
+      bronnen: [
+        { titel: "Statue of George Canning, Parliament Square — Wikipedia (EN)", url: "https://en.wikipedia.org/wiki/Statue_of_George_Canning,_Parliament_Square" },
+        { titel: "Statue of George Canning — Historic England (list entry 1226371)", url: "https://historicengland.org.uk/listing/the-list/list-entry/1226371" },
+        { titel: "George Canning statue — London Remembers", url: "https://www.londonremembers.com/memorials/george-canning-statue" },
+        { titel: "Vincent Gahagan — Wikipedia (EN)", url: "https://en.wikipedia.org/wiki/Vincent_Gahagan" },
+        { titel: "George Canning — Museum of the Prime Minister", url: "https://www.museumofpm.org/prime-ministers/george-canning/" },
+        { titel: "Records of prime ministers of the United Kingdom — Wikipedia (EN)", url: "https://en.wikipedia.org/wiki/Records_of_prime_ministers_of_the_United_Kingdom" },
+        { titel: "The Statues of Parliament Square in London — Inspiring City", url: "https://inspiringcity.com/2021/01/01/the-statues-of-parliament-square-in-london/" }
+      ]
+    },
+
+    {
+      id: "beeld-lincoln",
+      plaats: "london",
+      jaar: 1920,
+      niveau: 3,
+      naam: "Standbeeld Abraham Lincoln",
+      ondertitel: "Bronzen standbeeld · 1920 · naar Augustus Saint-Gaudens (Chicago, 1887) · Grade II",
+      coord: [51.50061, -0.12781],
+      coord_bron: "handmatig",
+      themas: ["standbeelden"],
+      roem: 50,
+      verhaal: 72,
+      esthetiek: 70,
+      afbeelding: "Abraham lincoln memorial-london.jpg",
+      bijschrift: "Lincoln voor zijn stoel, een kopie van Saint-Gaudens' beeld in Chicago, sinds 1920 op Canning Green.",
+      glance: "Een Amerikaanse president tegenover het Britse parlement: cadeau voor honderd jaar vrede, en pas het tweede beeld dat men ervoor uitkoos.",
+      waarom_hier: "Een geschenk van Amerikanen voor een eeuw vrede tussen beide landen sinds 1814, neergezet vóór de Middlesex Guildhall, nu het Supreme Court, op Canning Green aan de westkant.",
+      verhaal_tekst: "Een Amerikaanse president tegenover het Britse parlement — het was bedoeld als cadeau voor honderd jaar vrede. In 1913 besloot een Amerikaans comité het eeuwfeest van het einde van de oorlog van 1812 te vieren met een beeld van Lincoln voor London; in 1914 werd een kopie aangekondigd van Augustus Saint-Gaudens' bronzen Lincoln uit Chicago, uit 1887. Intussen was ook een beeld van George Grey Barnard bestemd voor de plek bij het parlement, maar zijn Lincoln stuitte op verzet; men wilde een staatsmanachtiger beeld. Barnards versie ging in 1919 naar Manchester, de stad die tijdens de Amerikaanse Burgeroorlog de Unie had gesteund, en London kreeg na de Eerste Wereldoorlog alsnog Saint-Gaudens. De onthulling was op 28 juli 1920; de plechtigheid zelf vond wegens het weer binnen plaats, in Central Hall. Het brons van 3,7 meter toont Lincoln staand voor zijn stoel. Het staat op Canning Green, voor de Middlesex Guildhall — nu het Supreme Court — met [[westminster-abbey|de abdij]] ernaast en [[beeld-canning|Canning]] als buurman.",
+      let_hierop: "Kijk naar de stoel achter hem: hij is net opgestaan. Vergelijk dan met de Victoriaanse premiers aan de overkant van de weg — dit is een ander idee van een staatsman: geen mantel, geen sokkel van vier meter.",
+      praktisch: "Canning Green, westzijde van Parliament Square, voor het Supreme Court. Vrij toegankelijk.",
+      onbevestigd: "Coördinaat is afgeleid uit een secundaire bron met slechts vier decimalen (British Listed Buildings, 51.5006 / -0.1278; onzekerheid ca. 10 m) en nog niet tegen OpenStreetMap gecontroleerd. Bestandsnaam van de afbeelding is gezien in een categorie-overzicht in een zoekresultaat; licentie niet apart nagekeken. 'Geen sokkel van vier meter' is een vergelijking met Canning, niet een maat uit een bron.",
+      verbindingen: [
+        { id: "beeld-canning", relatie: "delen Canning Green, los van het hoofdplein" },
+        { id: "beeld-gandhi", relatie: "de tweede buitenlander zonder Brits ambt op het plein, 95 jaar later" },
+        { id: "beeld-smuts", relatie: "na Lincoln de tweede buitenlander op het plein" },
+        { id: "westminster-abbey", relatie: "staat er schuin tegenover" }
+      ],
+      bronnen: [
+        { titel: "The Dedication of the Living: Saint-Gaudens's Abraham Lincoln in Chicago and London — Journal of the Abraham Lincoln Association", url: "https://quod.lib.umich.edu/j/jala/2629860.0040.103/--dedication-of-the-living-augustus-saint-gaudenss-abraham?rgn=main%3Bview%3Dfulltext" },
+        { titel: "Statues and Status: Lincoln in Europe — American Studies Journal", url: "http://www.asjournal.org/60-2016/statues-status-lincoln-europe/" },
+        { titel: "Lincoln Statue in Manchester, by George Grey Barnard — Bob Speel", url: "http://www.speel.me.uk/sculptplaces/manchlincoln.htm" },
+        { titel: "Statue of Abraham Lincoln, Lincoln Square, Manchester — Revealing Histories", url: "http://www.revealinghistories.org.uk/the-american-civil-war-and-the-lancashire-cotton-famine/places/statue-of-abraham-lincoln-lincoln-square-manchester.html" },
+        { titel: "Abraham Lincoln Statue in London, England — Abraham Lincoln Online", url: "https://www.abrahamlincolnonline.org/lincoln/art/london.htm" },
+        { titel: "Statue of Abraham Lincoln in front of Middlesex Guildhall — British Listed Buildings", url: "https://britishlistedbuildings.co.uk/101265875-statue-of-abraham-lincoln-in-front-of-middlesex-guildhall-st-jamess-ward" },
+        { titel: "The Statues of Parliament Square in London — Inspiring City", url: "https://inspiringcity.com/2021/01/01/the-statues-of-parliament-square-in-london/" }
+      ]
+    },
+
+    {
+      id: "beeld-gandhi",
+      plaats: "london",
+      jaar: 2015,
+      niveau: 3,
+      naam: "Standbeeld Mahatma Gandhi",
+      ondertitel: "Bronzen standbeeld · 2015 · Philip Jackson",
+      coord: [51.50057, -0.12724],
+      coord_bron: "handmatig",
+      themas: ["standbeelden"],
+      roem: 50,
+      verhaal: 65,
+      esthetiek: 65,
+      afbeelding: "Mahatma Gandhi at Parliament Square, London.jpg",
+      bijschrift: "Gandhi naar foto's uit 1931 voor Downing Street, bewust laag geplaatst tussen de bezoekers.",
+      glance: "De man die de Britse heerschappij bestreed, tegenover het parlement dat erover besliste — bewust lager gezet dan alle premiers om hem heen.",
+      waarom_hier: "Onthuld honderd jaar na Gandhi's terugkeer uit Zuid-Afrika naar India; hij staat aan de westkant, naast Fawcett, en is de enige op het plein die nooit een openbaar ambt bekleedde.",
+      verhaal_tekst: "Mahatma Gandhi bezocht London voor het laatst in september 1931, voor de Tweede Ronde-Tafelconferentie over de toekomst van India, als enige vertegenwoordiger van het Indian National Congress. Foto's van hem voor de ambtswoning van de premier in Downing Street, uit dat bezoek, zijn de basis van dit beeld: Philip Jackson maakte hem 2,7 meter hoog in brons. Het werd op 14 maart 2015 onthuld, honderd jaar nadat Gandhi uit Zuid-Afrika naar India was teruggekeerd om zijn onafhankelijkheidsstrijd te beginnen, met premier David Cameron, de Indiase minister van Financiën Arun Jaitley, acteur Amitabh Bachchan en kleinzoon Gopalkrishna Gandhi erbij. Toen de vergunning binnen was, had de Gandhi Statue Memorial Trust 100.000 pond bijeen en was nog 500.000 nodig. De Trust zette hem bewust lager dan de andere beelden: een man van het volk, die tussen de bezoekers van het plein moest staan. Hij is de eerste Indiër op het plein, en de enige die nooit een openbaar ambt bekleedde — een man die de Britse heerschappij bestreed, tegenover het parlement dat erover besliste.",
+      let_hierop: "Kijk naar de hoogte: hij staat nauwelijks boven je uit, terwijl de premiers om hem heen op sokkels van twee tot vier meter staan. Let op de shawl en de blote voeten in sandalen — de kleding van de foto's uit 1931.",
+      praktisch: "Parliament Square, Westminster, westkant. Vrij toegankelijk.",
+      onbevestigd: "Coördinaat is afgeleid uit een secundaire bron (Wikipedia-infobox) en nog niet tegen OpenStreetMap gecontroleerd. Bestandsnaam van de afbeelding is gezien in een zoekresultaat maar de licentie is niet apart nagekeken. 'Shawl en sandalen' is een lezing van de foto's van het beeld, niet van een bron.",
+      verbindingen: [
+        { id: "beeld-fawcett", relatie: "staat aan zijn rechterkant" },
+        { id: "beeld-mandela", relatie: "beide begonnen hun strijd in Zuid-Afrika" },
+        { id: "beeld-lincoln", relatie: "de andere buitenlander die nooit Brits ambt droeg" }
+      ],
+      bronnen: [
+        { titel: "Statue of Mahatma Gandhi, Parliament Square — Wikipedia (EN)", url: "https://en.wikipedia.org/wiki/Statue_of_Mahatma_Gandhi,_Parliament_Square" },
+        { titel: "New Statue Of Gandhi Unveiled In Britain's Parliament Square — NPR", url: "https://www.npr.org/sections/thetwo-way/2015/03/14/393015469/new-statue-of-gandhi-unveiled-in-britains-parliament-square" },
+        { titel: "Remembering Mahatma Gandhi: the first statue of an Indian unveiled in Parliament Square — The Conversation", url: "https://theconversation.com/remembering-mahatma-gandhi-the-first-statue-of-an-indian-unveiled-in-parliament-square-38330" },
+        { titel: "Historic Mahatma Gandhi statue unveiled at Britain's Parliament Square — mkgandhi.org", url: "https://www.mkgandhi.org/newannou/historic-statue-of-mahatma-gandhi-unveiled-at-britain-s-parliament-square.html" },
+        { titel: "Mahatma Gandhi statue in Parliament Square — Early Day Motion, UK Parliament", url: "https://edm.parliament.uk/early-day-motion/47689/mahatma-gandhi-statue-in-parliament-square" },
+        { titel: "1931 Indian Round Table Conference — UK Parliament", url: "https://www.parliament.uk/about/living-heritage/evolutionofparliament/legislativescrutiny/parliament-and-empire/collections1/collections2/1931-round-table-conference/1931-indian-round-table-conference1/" }
+      ]
+    },
+
+    {
+      id: "beeld-mandela",
+      plaats: "london",
+      jaar: 2007,
+      niveau: 3,
+      naam: "Standbeeld Nelson Mandela",
+      ondertitel: "Bronzen standbeeld · 2007 · Ian Walters",
+      coord: [51.50041, -0.12712],
+      coord_bron: "handmatig",
+      themas: ["standbeelden"],
+      roem: 50,
+      verhaal: 75,
+      esthetiek: 70,
+      afbeelding: "Statue of Nelson Mandela, Parliament Square.jpg",
+      bijschrift: "Mandela sprekend, met gespreide armen, op een sokkel lager dan die van al zijn buren.",
+      glance: "In 1962 grapte Mandela hier met Oliver Tambo dat er ooit een zwarte man naast Smuts zou staan. In 2007 stond hij er zelf bij.",
+      waarom_hier: "Bedoeld voor Trafalgar Square, maar de gemeente Westminster weigerde; zo kwam het in de zuidwesthoek van dit plein, met het gezicht naar het parlement — en op hetzelfde plein als Smuts.",
+      verhaal_tekst: "Op 29 augustus 2007 onthulde premier Gordon Brown dit beeld, en Mandela was erbij. Hij vertelde de menigte dat hij in 1962 met Oliver Tambo over dit plein had gelopen en dat ze toen grappend hoopten dat hier ooit een zwarte man zou staan, naast [[beeld-smuts|generaal Smuts]]. Tambo zou trots zijn geweest, zei hij. Het plan kwam in 2001 van de Zuid-Afrikaanse journalist Donald Woods; na zijn dood zetten zijn vrouw en regisseur Richard Attenborough het door. Burgemeester Ken Livingstone wilde het beeld op het noordterras van Trafalgar Square, maar de gemeente Westminster weigerde; zo kwam het hier, in de zuidwesthoek, met het gezicht naar het parlement. Ian Walters maakte het, 2,7 meter brons, voor 400.000 pond; hij overleed voor de onthulling. Mandela staat met gespreide armen, sprekend, op een sokkel die lager is dan die van alle buren: geen man op een voetstuk, maar iemand op ooghoogte. Brown noemde hem die dag 'de grootste en moedigste leider van onze generatie'.",
+      let_hierop: "Ga ernaast staan: de sokkel is zo laag dat je bijna oog in oog staat. Kijk dan naar de noordkant van het plein, naar Smuts — de man uit de grap van 1962.",
+      praktisch: "Parliament Square, Westminster, zuidwesthoek. Vrij toegankelijk.",
+      onbevestigd: "Coördinaat is NIET uit een bron overgenomen: Wikipedia en Wikidata geven voor dit beeld een coördinaat (51°30′10″N 0°7′48″W) die honderden meters buiten het plein ligt. De pin is daarom afgeleid uit de beschrijving 'zuidwesthoek, met het gezicht naar het parlement' en de coördinaten van de buren Peel en Gandhi; verwachte afwijking tot 25 m. Bestandsnaam van de afbeelding is gezien in een zoekresultaat maar de licentie is niet apart nagekeken.",
+      verbindingen: [
+        { id: "beeld-smuts", relatie: "de man naast wie hij volgens de grap van 1962 zou komen te staan" },
+        { id: "beeld-peel", relatie: "delen de zuidwesthoek van het plein" },
+        { id: "beeld-gandhi", relatie: "beide begonnen hun strijd in Zuid-Afrika" },
+        { id: "big-ben", relatie: "het gebouw waar het beeld naar kijkt" }
+      ],
+      bronnen: [
+        { titel: "Statue of Nelson Mandela, Parliament Square — Wikipedia (EN)", url: "https://en.wikipedia.org/wiki/Statue_of_Nelson_Mandela,_Parliament_Square" },
+        { titel: "Mandela statue unveiled in London — CBC News", url: "https://www.cbc.ca/news/world/mandela-statue-unveiled-in-london-1.670766" },
+        { titel: "The South African Footprint in Parliament Square, London — The Heritage Portal", url: "https://www.theheritageportal.co.za/article/south-african-footprint-parliament-square-london" },
+        { titel: "Statue of Nelson Mandela, Parliament Square — Kiddle (Wikipedia-afgeleide)", url: "https://kids.kiddle.co/Statue_of_Nelson_Mandela,_Parliament_Square" }
       ]
     }
   ],

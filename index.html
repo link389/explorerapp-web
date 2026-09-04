@@ -339,7 +339,12 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":
 
 /* ---------- kaart ---------- */
 window.map = null;
-const map = L.map("map", { zoomControl:false, attributionControl:false })
+/* zoomSnap 0: de pinch eindigt waar je hem loslaat in plaats van terug te
+   klikken naar een heel niveau. maxZoom 21 met bounceAtZoomLimits uit: verder
+   inzoomen dan de tegels gaan mag, de kaart schaalt dan op (zie tileLayer)
+   in plaats van zwart te knipperen en terug te springen.                   */
+const map = L.map("map", { zoomControl:false, attributionControl:false,
+    maxZoom:21, zoomSnap:0, wheelPxPerZoomLevel:90, bounceAtZoomLimits:false })
   .setView(A.gebied.centrum, A.gebied.zoom);
 function meetKop(){
   document.documentElement.style.setProperty("--kop",
@@ -352,7 +357,11 @@ window.map = map;
 L.control.zoom({ position:"bottomleft" }).addTo(map);
 L.control.attribution({ position:"bottomright", prefix:false })
   .addAttribution('&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>-bijdragers').addTo(map);
-L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19}).addTo(map);
+// maxNativeZoom 19: dieper dan dat bestaan er geen OSM-tegels, dus schaalt
+// Leaflet de laatste op. Het beeld wordt zachter, maar je kunt wel verder —
+// nodig op pleinschaal, waar beelden tien meter uit elkaar staan.
+L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+  { maxNativeZoom:19, maxZoom:21 }).addTo(map);
 
 const netLayer = L.layerGroup().addTo(map);
 const markers = {};
@@ -389,7 +398,7 @@ function zichtbaarVoorFilter(poi){
 
 function hertekenen(){
   const z = map.getZoom();
-  const maat = z < 13 ? 34 : z < 15 ? 40 : z < 18 ? 46 : 38;
+  const maat = z < 13 ? 34 : z < 15 ? 40 : z < 17.5 ? 46 : z < 19.5 ? 38 : 32;
   const straal = maat * 1.15;
   document.body.classList.toggle("ver", z < 14);
   clusterLaag.clearLayers();

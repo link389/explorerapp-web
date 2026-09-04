@@ -247,6 +247,26 @@
     cursor:pointer;display:grid;place-items:center;flex:0 0 auto}
   #zoekKnop:hover{color:var(--tx);border-color:#3b4250}
 
+  /* ---- feedback ---- */
+  .fbSoorten{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 4px}
+  .fbSoort{flex:1 1 45%;background:var(--card2);border:1px solid transparent;color:var(--tx2);
+    border-radius:10px;padding:10px 8px;font:inherit;font-size:13px;cursor:pointer}
+  .fbSoort:hover:not(:disabled){color:var(--tx);border-color:#3b4250}
+  .fbSoort.on{background:var(--acc);color:#0f1115;font-weight:600}
+  .fbSoort:disabled{opacity:.35;cursor:default}
+  #sheetScroll textarea{width:100%;background:var(--card2);border:1px solid var(--line);
+    border-radius:10px;color:var(--tx);font:inherit;font-size:14px;padding:10px 12px;resize:vertical}
+  #sheetScroll textarea:focus{outline:none;border-color:var(--acc)}
+  .fbActie{display:block;width:100%;margin-top:10px;background:var(--card2);border:1px solid var(--line);
+    color:var(--tx);border-radius:11px;padding:12px;font:inherit;font-size:14px;cursor:pointer}
+  .fbActie:hover{border-color:#3b4250;background:#242938}
+  .fbActie.hoofd{background:var(--acc);color:#0f1115;font-weight:600;border-color:transparent}
+  .fbPin{position:absolute;left:0;top:0;width:34px;height:34px;transform:translate(-50%,-50%);
+    border-radius:50%;background:#ffb020;border:3px solid #0f1115;cursor:grab;
+    box-shadow:0 0 0 4px #ffb02055,0 3px 10px #000a}
+  .fbPin:active{cursor:grabbing}
+  .fbPin:after{content:"";position:absolute;inset:12px;border-radius:50%;background:#0f1115}
+
   #toast{position:absolute;left:50%;bottom:80px;transform:translate(-50%,20px);z-index:1200;
     background:#171a21f0;border:1px solid var(--line);border-radius:10px;padding:9px 14px;font-size:13px;
     color:var(--tx2);opacity:0;transition:.25s;pointer-events:none;max-width:88vw;text-align:center}
@@ -723,6 +743,7 @@ document.getElementById("grip").onclick = () => {
 };
 
 function sluit(){
+  if (fbSleepend) return;            // tijdens het verzetten van een pin blijft het paneel staan
   paneelSleutel = null;
   document.body.classList.remove("open","max");
   Object.values(markers).forEach(x => x.el.classList.remove("sel"));
@@ -801,6 +822,7 @@ function render(o){
 
   // waar hoort dit object bij? doorklikken naar het thema
   h += '<h4>Onderdeel van</h4>' + themaTegels(o.themas || []);
+  h += '<button class="fbActie" data-fbmeld>Klopt er iets niet?</button>';
 
   scroll.innerHTML = h;
   scroll.querySelectorAll(".tab").forEach(t => t.onclick = () => { tab = t.dataset.t; render(o); });
@@ -808,6 +830,7 @@ function render(o){
   scroll.querySelectorAll("[data-thema]").forEach(b =>
     bindDruk(b, () => focusThema(b.dataset.thema), () => focusThema(b.dataset.thema, true)));
   scroll.querySelectorAll("[data-plaats]").forEach(b => b.onclick = () => focusPlaats(b.dataset.plaats));
+  const meld = scroll.querySelector("[data-fbmeld]"); if (meld) meld.onclick = () => fbStart(o);
   bindLinks();
 }
 
@@ -1111,7 +1134,8 @@ function startInhoud(){
       sub: p.ondertitel || "", em, kleur: gevuld ? "#ffb020" : "#3b4250" });
   }).join("");
   h += '<div class="zkKop">Of begin bij een thema</div>' + themaTegels(Object.keys(T));
-  h += '<div class="zkVoet"><button id="zoekVrij">Of verken vrij op de kaart &rarr;</button></div>';
+  h += '<div class="zkVoet"><button id="zoekVrij">Of verken vrij op de kaart &rarr;</button>' +
+       '<button id="zoekFb" style="margin-left:6px">Feedback</button></div>';
   return h;
 }
 
@@ -1154,6 +1178,8 @@ function renderZoek(q){
     b.onclick = () => kiesUitZoek(b.dataset.soort, b.dataset.kies));
   uit.querySelectorAll("[data-thema]").forEach(b =>
     bindDruk(b, () => kiesUitZoek("thema", b.dataset.thema), () => { sluitZoek(); focusThema(b.dataset.thema, true); }));
+  const fbKnop = uit.querySelector("#zoekFb");
+  if (fbKnop) fbKnop.onclick = () => { sluitZoek(); fbRegister(); };
   const vrij = uit.querySelector("#zoekVrij");
   if (vrij) vrij.onclick = () => {
     sluitZoek();
@@ -1196,6 +1222,208 @@ document.addEventListener("keydown", e => {
 document.getElementById("zoekX").onclick = () => sluitZoek();
 document.getElementById("zoekKnop").onclick = openZoek;
 
+/* ---------- feedback: correcties en meldingen ----------------------------
+   Regel 1 blijft staan: een melding is géén bron. Wat hier binnenkomt is een
+   signaal voor de redactie, nooit rechtstreeks inhoud. Uitzondering in de
+   praktijk: een versleepte pin van iemand die er staat is beter bewijs dan
+   bureauonderzoek — maar ook die gaat eerst door verify.py.
+
+   Zolang SUPABASE leeg is bewaart de app meldingen op het toestel zelf; zodra
+   de sleutels er staan gaan ze naar de database en spoelt de wachtrij mee.  */
+const APP_VERSIE = "2026-09-05";
+const SUPABASE = { url: "", sleutel: "" };
+
+const FB_SLEUTEL = "explorerapp-feedback-v1";
+const fbLokaal  = () => { try { return JSON.parse(localStorage.getItem(FB_SLEUTEL) || "[]"); } catch (_) { return []; } };
+const fbBewaar  = rij => { try { localStorage.setItem(FB_SLEUTEL, JSON.stringify(rij)); } catch (_) {} };
+const fbNieuwId = () => "fb_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 8);
+
+async function fbNaarServer(item){
+  if (!SUPABASE.url) return false;
+  try {
+    const r = await fetch(SUPABASE.url + "/rest/v1/feedback", {
+      method: "POST",
+      headers: { "Content-Type":"application/json", apikey: SUPABASE.sleutel,
+                 Authorization: "Bearer " + SUPABASE.sleutel, Prefer: "return=minimal" },
+      body: JSON.stringify(item)
+    });
+    return r.ok;
+  } catch (_) { return false; }
+}
+
+// alles wat nog op het toestel staat alsnog versturen
+async function fbSpoel(){
+  if (!SUPABASE.url) return;
+  const rij = fbLokaal(); if (!rij.length) return;
+  const over = [];
+  for (const item of rij) if (!await fbNaarServer(item)) over.push(item);
+  fbBewaar(over);
+}
+
+async function fbOpenLijst(){
+  const wacht = fbLokaal().map(x => ({ ...x, _wacht: true }));
+  if (!SUPABASE.url) return wacht;
+  try {
+    const r = await fetch(SUPABASE.url + "/rest/v1/feedback?status=eq.open&order=tijd.desc&limit=100",
+      { headers: { apikey: SUPABASE.sleutel, Authorization: "Bearer " + SUPABASE.sleutel } });
+    return r.ok ? wacht.concat(await r.json()) : wacht;
+  } catch (_) { return wacht; }
+}
+
+/* ---- het formulier ---- */
+let fbConcept = null, fbMarker = null, fbLijn = null, fbSleepend = false;
+
+const FB_SOORTEN = [["coordinaat","Punt ligt verkeerd"], ["feit","Klopt niet"],
+                    ["bron","Bron ontbreekt"], ["overig","Iets anders"]];
+
+const fbAfstand = () => fbConcept && fbConcept.nieuw
+  ? Math.round(map.distance(fbConcept.oude, fbConcept.nieuw)) : 0;
+
+function fbStart(o){
+  fbConcept = { punt: o ? o.id : null, punt_naam: o ? o.naam : null,
+                plaats: o ? plaatsVan(o) : null,
+                oude: o && o.coord ? o.coord.slice() : null, nieuw: null,
+                soort: (o && o.coord) ? "coordinaat" : "feit", tekst: "" };
+  fbTeken();
+}
+
+function fbTeken(){
+  const c = fbConcept; if (!c) return;
+  zetStand("vol");
+  let h = '<div class="pad"><button data-fbterug>&lsaquo; terug</button></div>';
+  h += "<h1>Klopt er iets niet?</h1>" +
+       '<div class="sub">' + esc(c.punt_naam || "Algemene melding") + "</div>";
+  h += '<div class="fbSoorten">' + FB_SOORTEN.map(([k,l]) =>
+        '<button class="fbSoort' + (c.soort === k ? " on" : "") + '" data-fbsoort="' + k + '"' +
+        (k === "coordinaat" && !c.oude ? " disabled" : "") + ">" + l + "</button>").join("") + "</div>";
+  if (c.soort === "coordinaat"){
+    h += '<div class="note">Zoom zo ver mogelijk in en zet de pin precies op de plek. ' +
+         "Slepen kan, of tik op de kaart.</div>";
+    h += '<button class="fbActie" data-fbsleep>' + (c.nieuw ? "Positie aanpassen" : "Zet de pin goed") + "</button>";
+    if (c.nieuw) h += '<div class="cap">Verplaatst: ' + fbAfstand() + " meter.</div>";
+  }
+  h += "<h4>Toelichting" + (c.soort === "coordinaat" ? " (mag leeg)" : "") + "</h4>";
+  h += '<textarea id="fbTekst" rows="5" placeholder="' +
+       (c.soort === "feit" ? "Wat klopt er niet, en hoe weet je dat?"
+      : c.soort === "bron" ? "Welke bewering mist een bron?"
+      : c.soort === "coordinaat" ? "Bijvoorbeeld: staat aan de overkant van de straat."
+      : "Vertel maar.") + '"></textarea>';
+  h += '<button class="fbActie hoofd" data-fbstuur>Versturen</button>';
+  h += '<div class="cap">Er wordt niets over jou vastgelegd: geen naam, geen locatie, geen account. ' +
+       "Open meldingen zijn voor iedereen zichtbaar in het register.</div>";
+  scroll.innerHTML = h; scroll.scrollTop = 0;
+
+  const veld = document.getElementById("fbTekst");
+  veld.value = c.tekst;
+  veld.oninput = () => c.tekst = veld.value;
+  scroll.querySelector("[data-fbterug]").onclick = () => { const p = c.punt; fbStop(); p ? open(p) : openZoek(); };
+  scroll.querySelectorAll("[data-fbsoort]").forEach(b =>
+    b.onclick = () => { c.soort = b.dataset.fbsoort; fbTeken(); });
+  const sleep = scroll.querySelector("[data-fbsleep]"); if (sleep) sleep.onclick = fbSleepAan;
+  scroll.querySelector("[data-fbstuur]").onclick = fbStuur;
+}
+
+/* ---- de pin verzetten ---- */
+function fbSleepAan(){
+  const c = fbConcept; if (!c || !c.oude) return;
+  fbSleepend = true;
+  zetStand("half");
+  const start = c.nieuw || c.oude;
+  if (map.getZoom() < 18) map.setView(zichtbaarCentrum(start, 19), 19);
+  else map.panTo(zichtbaarCentrum(start, map.getZoom()));
+
+  const el = document.createElement("div");
+  el.className = "fbPin";
+  fbMarker = L.marker(start, { draggable: true, zIndexOffset: 2000, autoPan: true,
+    icon: L.divIcon({ html: el, className: "", iconSize: [0,0], iconAnchor: [0,0] }) }).addTo(map);
+  fbLijn = L.polyline([c.oude, start], { color: "#ffb020", weight: 2, dashArray: "5 5" }).addTo(map);
+
+  const zet = ll => {
+    c.nieuw = [+ll.lat.toFixed(6), +ll.lng.toFixed(6)];
+    fbLijn.setLatLngs([c.oude, c.nieuw]);
+    const m = document.getElementById("fbMeter");
+    if (m) m.textContent = fbAfstand() + " meter verplaatst";
+  };
+  fbMarker.on("drag", e => zet(e.target.getLatLng()));
+  fbMarker.on("dragend", e => zet(e.target.getLatLng()));
+  map.on("click", fbKaartTik);
+
+  scroll.innerHTML =
+    "<h1>Zet de pin goed</h1>" +
+    '<div class="sub">Sleep de oranje pin, of tik op de kaart. Zoom gerust helemaal in.</div>' +
+    '<div class="note" id="fbMeter">' + (c.nieuw ? fbAfstand() + " meter verplaatst" : "Nog niet verplaatst") + "</div>" +
+    '<button class="fbActie hoofd" data-fbklaar>Klaar</button>' +
+    '<button class="fbActie" data-fbaf>Annuleren</button>';
+  scroll.querySelector("[data-fbklaar]").onclick = () => { fbSleepUit(); fbTeken(); };
+  scroll.querySelector("[data-fbaf]").onclick = () => { fbConcept.nieuw = null; fbSleepUit(); fbTeken(); };
+}
+function fbKaartTik(e){ if (fbMarker){ fbMarker.setLatLng(e.latlng); fbMarker.fire("dragend", { target: fbMarker }); } }
+function fbSleepUit(){
+  fbSleepend = false;
+  map.off("click", fbKaartTik);
+  if (fbMarker) { map.removeLayer(fbMarker); fbMarker = null; }
+  if (fbLijn)   { map.removeLayer(fbLijn);   fbLijn = null; }
+}
+function fbStop(){ fbSleepUit(); fbConcept = null; }
+
+/* ---- versturen ---- */
+async function fbStuur(){
+  const c = fbConcept; if (!c) return;
+  if (c.soort === "coordinaat" && !c.nieuw && !c.tekst.trim())
+    return toast("Verzet de pin, of schrijf er iets bij.");
+  if (c.soort !== "coordinaat" && !c.tekst.trim())
+    return toast("Schrijf even wat er niet klopt.");
+
+  const item = { id: fbNieuwId(), tijd: new Date().toISOString(), soort: c.soort,
+    punt: c.punt, punt_naam: c.punt_naam, plaats: c.plaats,
+    oude_lat: c.oude ? c.oude[0] : null, oude_lon: c.oude ? c.oude[1] : null,
+    nieuwe_lat: c.nieuw ? c.nieuw[0] : null, nieuwe_lon: c.nieuw ? c.nieuw[1] : null,
+    afstand_m: c.nieuw ? fbAfstand() : null,
+    zoom: c.nieuw ? +map.getZoom().toFixed(1) : null,
+    tekst: c.tekst.trim().slice(0, 2000), app_versie: APP_VERSIE, status: "open" };
+
+  const weg = await fbNaarServer(item);
+  if (!weg){ const rij = fbLokaal(); rij.push(item); fbBewaar(rij); }
+  const punt = c.punt;
+  fbStop();
+  toast(weg ? "Bedankt — je melding staat in het register."
+            : "Bewaard op dit toestel; hij gaat mee zodra er verbinding is.");
+  punt ? open(punt) : openZoek();
+}
+
+/* ---- het register ---- */
+async function fbRegister(){
+  document.body.classList.remove("zoek");
+  huidig = null;
+  Object.values(markers).forEach(x => x.el.classList.remove("sel"));
+  toonPaneel("feedback-register");
+  scroll.innerHTML = "<h1>Feedback</h1><div class=\"sub\">Openstaande meldingen.</div>" +
+                     '<div class="cap">Laden…</div>';
+  const rij = await fbOpenLijst();
+  let h = "<h1>Feedback</h1>" +
+    '<div class="sub">Openstaande meldingen. Verwerkte en afgewezen meldingen verdwijnen hier, ' +
+    "maar blijven bewaard in het register.</div>";
+  h += rij.length ? '<div class="areas">' + rij.map(x => {
+      const o = x.punt ? byId(x.punt) : null;
+      return '<div class="area"' + (o ? ' data-go="' + x.punt + '"' : "") +
+        (o ? ' style="border-left:3px solid ' + kleur(o) + '"' : "") + "><b>" +
+        esc(x.punt_naam || "Algemene melding") + "</b><span>" +
+        (x.afstand_m ? "Punt verzetten, " + x.afstand_m + " meter. " : "") +
+        esc(x.tekst || "") + "</span><em>" +
+        (FB_SOORTEN.find(s => s[0] === x.soort) || ["","melding"])[1].toLowerCase() +
+        " · " + String(x.tijd).slice(0, 10) +
+        (x._wacht ? " · nog niet verzonden" : "") + "</em></div>";
+    }).join("") + "</div>"
+    : '<p>Nog geen openstaande meldingen.</p>';
+  h += '<button class="fbActie" data-fbalgemeen>Iets melden zonder punt</button>';
+  h += '<div class="cap">Zie je een pin op de verkeerde plek staan? Open dat punt en tik onderaan ' +
+       "op <em>Klopt er iets niet?</em> — dan kun je de pin zelf verslepen.</div>";
+  scroll.innerHTML = h;
+  scroll.querySelectorAll("[data-go]").forEach(b => b.onclick = () => open(b.dataset.go));
+  scroll.querySelector("[data-fbalgemeen]").onclick = () => fbStart(null);
+  scroll.scrollTop = 0;
+}
+
 /* ---------- toast ---------- */
 let tt;
 function toast(m){
@@ -1208,6 +1436,7 @@ verf();   // eerste tekenbeurt: filters staan aan, dan clusteren
 document.getElementById("brandSub").textContent =
   stedenMetInhoud().map(p => p.naam).join(" · ") + " · proefdata";
 
+fbSpoel();
 naarLocatie(true);
 setTimeout(() => { if (!locHint) toast("Tik op een punt — of zoek een plaats of thema via ⌕ linksboven."); }, 700);
 } // einde start()

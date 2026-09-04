@@ -1231,7 +1231,12 @@ document.getElementById("zoekKnop").onclick = openZoek;
    Zolang SUPABASE leeg is bewaart de app meldingen op het toestel zelf; zodra
    de sleutels er staan gaan ze naar de database en spoelt de wachtrij mee.  */
 const APP_VERSIE = "2026-09-05";
-const SUPABASE = { url: "", sleutel: "" };
+const SUPABASE = {
+  url: "https://nurbdpjqihvaygsnivvz.supabase.co",
+  // De anon-sleutel hoort openbaar te zijn: de toegangsregels in Supabase
+  // bepalen wat hij mag (toevoegen als open, lezen wat open is, verder niets).
+  sleutel: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51cmJkcGpxaWh2YXlnc25pdnZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg1MTYyNjUsImV4cCI6MjEwNDA5MjI2NX0.RYPKAqQ-8gEu5xgdHHEFSmoYo8q1CdZisP5j9ukHGRc"
+};
 
 const FB_SLEUTEL = "explorerapp-feedback-v1";
 const fbLokaal  = () => { try { return JSON.parse(localStorage.getItem(FB_SLEUTEL) || "[]"); } catch (_) { return []; } };

@@ -1968,7 +1968,7 @@ window.APP = {
       niveau: 2,
       naam: "Standbeeld Winston Churchill",
       ondertitel: "Bronzen standbeeld · 1973 · Ivor Roberts-Jones · Grade II",
-      coord: [51.50083, -0.12642],
+      coord: [51.500837, -0.12643],
       coord_bron: "handmatig",
       themas: ["standbeelden", "kroon"],
       roem: 70,
@@ -1981,7 +1981,7 @@ window.APP = {
       verhaal_tekst: "Winston Churchill was premier van 1940 tot 1945 en van 1951 tot 1955; de oorlog leidde hij deels vanuit [[churchill-war-rooms|een kelder onder Whitehall]], vlakbij. Al in de jaren vijftig wees hij op dit plein een plek aan met de woorden 'where my statue will go'. Het kwam er: op 1 november 1973 trok zijn weduwe Clementine het doek weg, met de zittende premier en vier oud-premiers erbij; koningin Elizabeth II hield een toespraak. Ivor Roberts-Jones maakte hem 3,66 meter hoog op een sokkel van 2,44 meter: marine-overjas, geen hoed, leunend op een stok, de blik op het parlement. De commissie vond het eerste model boven de ogen op Mussolini lijken; Roberts-Jones maakte het voorhoofd lager. Sinds 24 januari 2008 is het beeld beschermd (Grade II). Op 1 mei 2000 kreeg het een hanenkam van graszoden en rode verf uit de mond; in juni 2020 verdween het tijdelijk achter een houten kist. Dat er stroom op staat tegen duiven is een stadsmythe: het blijft schoon omdat er geen bomen overheen hangen.",
       let_hierop: "Kijk waar hij naar kijkt: recht op het parlementsgebouw. En let op de jas — een marine-overjas uit de oorlogsjaren, zonder hoed, de rechterhand op de stok.",
       praktisch: "Parliament Square, Westminster, noordoosthoek. Vrij toegankelijk.",
-      onbevestigd: "Coördinaat is omgerekend uit de National Grid Reference TQ 30143 79652 van de monumentenlijst en nog niet tegen OpenStreetMap gecontroleerd (verwachte nauwkeurigheid ca. 10 m). Bestandsnaam van de afbeelding is gezien in een zoekresultaat maar de licentie is niet apart nagekeken.",
+      onbevestigd: "Co\u00f6rdinaat is op 4 september 2026 in de app gecorrigeerd door iemand die op de kaart inzoomde tot niveau 21; de oorspronkelijke waarde kwam uit een omgerekende rasterverwijzing en lag \u00e9\u00e9n meter verderop. Nog niet tegen OpenStreetMap gecontroleerd. Nog geen gecontroleerde vrije afbeelding.",
       verbindingen: [
         { id: "beeld-lloyd-george", relatie: "zijn buurman aan de noordkant van het plein" },
         { id: "beeld-smuts", relatie: "Churchill stelde in 1951 zelf dit beeld van zijn vriend voor" },

@@ -255,6 +255,17 @@
     cursor:pointer;display:grid;place-items:center;flex:0 0 auto}
   #zoekKnop:hover{color:var(--tx);border-color:#3b4250}
 
+  /* ---- waar ben ik, en welke kant kijk ik op ----
+     De kaart blijft op noord (rastertegels met ingebakken straatnamen kantelen
+     mee, en dat is onleesbaar). In plaats daarvan draait de kegel: die wijst
+     waar je naar kijkt, zoals in elke kaart-app met de kaart op noord.      */
+  .mijPin{position:absolute;left:0;top:0;transform:translate(-50%,-50%);width:0;height:0}
+  .mijPin b{position:absolute;left:-8px;top:-8px;width:16px;height:16px;border-radius:50%;
+    background:#3b82f6;border:2.5px solid #fff;box-shadow:0 2px 7px #000a}
+  .mijPin .kegel{position:absolute;left:-48px;top:-48px;width:96px;height:96px;opacity:0;
+    transform:rotate(var(--hoek,0deg));transition:transform .16s linear,opacity .3s}
+  .mijPin.koers .kegel{opacity:1}
+
   /* ---- feedback ---- */
   .fbSoorten{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 4px}
   .fbSoort{flex:1 1 45%;background:var(--card2);border:1px solid transparent;color:var(--tx2);
@@ -633,15 +644,70 @@ function tekenNet(focus){
    zit, zoekt zelf. Het eerste is één tik op de knop rechtsonder — bewust een
    handeling, want een kaart die bij het laden zelf wegspringt is verwarrend.
    Ver van alle steden krijg je een hint welke stad het dichtst is.         */
-let locMarker = null;
+let locMarker = null, mijnKoers = null;
+
+// de stip met de kijkkegel; de kegel verschijnt pas als de koers bekend is
+function mijnMarker(c){
+  if (locMarker) map.removeLayer(locMarker);
+  const el = document.createElement("div");
+  el.className = "mijPin";
+  el.innerHTML =
+    '<svg class="kegel" viewBox="-48 -48 96 96" aria-hidden="true">' +
+      '<defs><radialGradient id="kegelKleur" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="46">' +
+        '<stop offset="0" stop-color="#60a5fa" stop-opacity=".8"/>' +
+        '<stop offset="1" stop-color="#3b82f6" stop-opacity="0"/></radialGradient></defs>' +
+      '<path d="M0 0 L-19 -42 A46 46 0 0 1 19 -42 Z" fill="url(#kegelKleur)"/></svg><b></b>';
+  locMarker = L.marker(c, { interactive:false, zIndexOffset:1500,
+    icon: L.divIcon({ html: el, className:"", iconSize:[0,0], iconAnchor:[0,0] }) }).addTo(map);
+  if (mijnKoers != null) zetKoers(mijnKoers);
+}
+
+function zetKoers(graden){
+  mijnKoers = graden;
+  const el = locMarker && locMarker.getElement && locMarker.getElement();
+  const pin = el && el.querySelector(".mijPin");
+  if (!pin) return;
+  pin.style.setProperty("--hoek", graden.toFixed(1) + "deg");
+  pin.classList.add("koers");
+}
+
+/* De kompasrichting van het toestel. Android geeft die via
+   deviceorientationabsolute (alpha loopt tegen de klok in, dus 360 - alpha),
+   iOS via webkitCompassHeading en pas na expliciete toestemming. Lukt het
+   niet, dan blijft de kegel gewoon weg — de stip werkt ook zonder.        */
+let kompasAan = false;
+function kompasStart(){
+  if (kompasAan) return; kompasAan = true;
+  let absoluutGezien = false;
+  const lees = e => {
+    let h = null;
+    if (typeof e.webkitCompassHeading === "number") h = e.webkitCompassHeading;
+    else if (typeof e.alpha === "number" && (e.absolute || e.type === "deviceorientationabsolute"))
+      h = 360 - e.alpha;
+    if (h == null || isNaN(h)) return;
+    if (e.type === "deviceorientationabsolute") absoluutGezien = true;
+    const draai = (screen.orientation && screen.orientation.angle) || 0;
+    zetKoers((h + draai) % 360);
+  };
+  const luister = () => {
+    window.addEventListener("deviceorientationabsolute", lees, true);
+    // alleen als er geen absolute meting komt terugvallen op de relatieve
+    setTimeout(() => { if (!absoluutGezien) window.addEventListener("deviceorientation", lees, true); }, 1500);
+  };
+  const D = window.DeviceOrientationEvent;
+  if (D && typeof D.requestPermission === "function")
+    D.requestPermission().then(r => { if (r === "granted") luister(); }).catch(() => {});
+  else luister();
+}
+
 function naarLocatie(stil){
   if (!navigator.geolocation){ if (!stil) toast("Geolocatie niet beschikbaar"); return; }
   if (!stil) toast("Locatie zoeken…");
   navigator.geolocation.getCurrentPosition(
     p => {
       const c = [p.coords.latitude, p.coords.longitude];
-      if (locMarker) map.removeLayer(locMarker);
-      locMarker = L.circleMarker(c,{radius:7,color:"#fff",weight:2,fillColor:"#3b82f6",fillOpacity:1}).addTo(map);
+      mijnMarker(c);
+      kompasStart();
       const dichtst = stedenMetInhoud().filter(p => p.kaart)
         .map(p => [map.distance(c, p.kaart.centrum), p]).sort((a,b) => a[0]-b[0])[0];
       const dichtbij = dichtst && dichtst[0] <= 20000;

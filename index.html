@@ -1391,6 +1391,42 @@ async function fbStuur(){
   punt ? open(punt) : openZoek();
 }
 
+/* ---- de wachtrij delen ----------------------------------------------
+   Zolang er geen database achter zit (of er geen verbinding was) staan
+   meldingen op het toestel. Deze knop geeft ze mee aan de redactie: via het
+   deelvenster van de telefoon, of naar het klembord.                     */
+function fbAlsTekst(items){
+  const regels = items.map((x, i) => {
+    let r = (i + 1) + ". " + (x.punt_naam || "Algemene melding") +
+            (x.punt ? " [" + x.punt + "]" : "") + " — " +
+            (FB_SOORTEN.find(s => s[0] === x.soort) || ["","melding"])[1].toLowerCase();
+    if (x.nieuwe_lat != null)
+      r += "\n   van " + x.oude_lat + "," + x.oude_lon +
+           " naar " + x.nieuwe_lat + "," + x.nieuwe_lon +
+           " (" + x.afstand_m + " m, zoom " + x.zoom + ")";
+    if (x.tekst) r += "\n   \u201c" + x.tekst + "\u201d";
+    return r;
+  });
+  return "ExplorerApp feedback \u2014 " + items.length + " melding" + (items.length === 1 ? "" : "en") +
+         "\n\n" + regels.join("\n") +
+         "\n\n--- ruwe gegevens ---\n" + JSON.stringify(items);
+}
+
+async function fbDeel(items){
+  const tekst = fbAlsTekst(items);
+  if (navigator.share){
+    try { await navigator.share({ title: "ExplorerApp feedback", text: tekst }); return toast("Gedeeld."); }
+    catch (_) { return; }                       // afgebroken door de gebruiker
+  }
+  try { await navigator.clipboard.writeText(tekst); return toast("Gekopieerd \u2014 plak het in de chat."); }
+  catch (_) {}
+  scroll.innerHTML = "<h1>Meldingen</h1>" +
+    '<div class="sub">Kopiëren lukte niet. Selecteer de tekst hieronder en kopieer hem met de hand.</div>' +
+    '<textarea rows="14"></textarea><button class="fbActie" data-fbterug>&lsaquo; terug</button>';
+  scroll.querySelector("textarea").value = tekst;
+  scroll.querySelector("[data-fbterug]").onclick = fbRegister;
+}
+
 /* ---- het register ---- */
 async function fbRegister(){
   document.body.classList.remove("zoek");
@@ -1403,6 +1439,9 @@ async function fbRegister(){
   let h = "<h1>Feedback</h1>" +
     '<div class="sub">Openstaande meldingen. Verwerkte en afgewezen meldingen verdwijnen hier, ' +
     "maar blijven bewaard in het register.</div>";
+  if (!SUPABASE.url)
+    h += '<div class="warn"><b>Nog niet aangesloten</b>Meldingen staan op dit toestel. ' +
+         "Deel ze met de knop onderaan, dan komen ze bij de redactie.</div>";
   h += rij.length ? '<div class="areas">' + rij.map(x => {
       const o = x.punt ? byId(x.punt) : null;
       return '<div class="area"' + (o ? ' data-go="' + x.punt + '"' : "") +
@@ -1415,12 +1454,18 @@ async function fbRegister(){
         (x._wacht ? " · nog niet verzonden" : "") + "</em></div>";
     }).join("") + "</div>"
     : '<p>Nog geen openstaande meldingen.</p>';
+  const wacht = rij.filter(x => x._wacht);
+  if (wacht.length)
+    h += '<button class="fbActie hoofd" data-fbdeel>' + wacht.length + " melding" +
+         (wacht.length === 1 ? "" : "en") + " delen met de redactie</button>";
   h += '<button class="fbActie" data-fbalgemeen>Iets melden zonder punt</button>';
   h += '<div class="cap">Zie je een pin op de verkeerde plek staan? Open dat punt en tik onderaan ' +
        "op <em>Klopt er iets niet?</em> — dan kun je de pin zelf verslepen.</div>";
   scroll.innerHTML = h;
   scroll.querySelectorAll("[data-go]").forEach(b => b.onclick = () => open(b.dataset.go));
   scroll.querySelector("[data-fbalgemeen]").onclick = () => fbStart(null);
+  const deel = scroll.querySelector("[data-fbdeel]");
+  if (deel) deel.onclick = () => fbDeel(wacht.map(x => { const y = { ...x }; delete y._wacht; return y; }));
   scroll.scrollTop = 0;
 }
 

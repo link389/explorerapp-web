@@ -80,10 +80,18 @@
   #fabs{position:absolute;right:12px;z-index:1050;display:flex;flex-direction:column;gap:8px;
     bottom:calc(12px + env(safe-area-inset-bottom));transition:bottom .28s cubic-bezier(.2,.8,.2,1)}
   body.open #fabs{bottom:calc(var(--sheet-h) + 12px)}
-  .fab{width:44px;height:44px;border-radius:14px;border:1px solid var(--line);background:#171a21e8;
-    backdrop-filter:blur(8px);color:var(--tx2);font-size:18px;display:grid;place-items:center;cursor:pointer}
-  .fab:hover{color:var(--tx)}
+  .fab{width:46px;height:46px;border-radius:14px;border:1px solid var(--line);background:#171a21ee;
+    backdrop-filter:blur(8px);color:var(--tx);display:grid;place-items:center;cursor:pointer;padding:0}
+  .fab svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;
+    stroke-linecap:round;stroke-linejoin:round}
+  .fab:hover{background:#20242e}
+  .fab:active{background:#262b36}
   .fab.on{background:var(--acc);color:#0f1115;border-color:transparent}
+  /* in- en uitzoomen horen bij elkaar: één blokje, zoals elke kaart-app */
+  #zoomPaar{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:14px;
+    overflow:hidden;background:#171a21ee;backdrop-filter:blur(8px)}
+  #zoomPaar .fab{border:none;border-radius:0;background:none;backdrop-filter:none}
+  #zoomPaar .fab:first-child{border-bottom:1px solid var(--line)}
 
   /* ---- bottom sheet ---- */
   /* Drie standen, zoals een kaart-app hoort te doen: dicht (weggeschoven),
@@ -299,9 +307,15 @@
 </div>
 
 <div id="fabs">
-  <button class="fab" id="fNet" title="Verbindingen op de kaart">◈</button>
-  <button class="fab" id="fArea" title="Verhalen over dit gebied">▤</button>
-  <button class="fab" id="fLoc" title="Mijn locatie">◎</button>
+  <div id="zoomPaar">
+    <button class="fab" id="fIn" title="Inzoomen" aria-label="Inzoomen">
+      <svg viewBox="0 0 24 24"><path d="M12 6v12M6 12h12"/></svg></button>
+    <button class="fab" id="fUit" title="Uitzoomen" aria-label="Uitzoomen">
+      <svg viewBox="0 0 24 24"><path d="M6 12h12"/></svg></button>
+  </div>
+  <button class="fab" id="fLoc" title="Waar ben ik?" aria-label="Waar ben ik?">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.4" fill="currentColor" stroke="none"/>
+      <circle cx="12" cy="12" r="7.5"/><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3"/></svg></button>
 </div>
 
 <div id="sheet">
@@ -374,7 +388,8 @@ meetKop();
 window.addEventListener("resize", meetKop);
 if (window.ResizeObserver) new ResizeObserver(meetKop).observe(document.getElementById("top"));
 window.map = map;
-L.control.zoom({ position:"bottomleft" }).addTo(map);
+document.getElementById("fIn").onclick  = () => map.zoomIn();
+document.getElementById("fUit").onclick = () => map.zoomOut();
 L.control.attribution({ position:"bottomright", prefix:false })
   .addAttribution('&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>-bijdragers').addTo(map);
 // maxNativeZoom 19: dieper dan dat bestaan er geen OSM-tegels, dus schaalt
@@ -383,7 +398,7 @@ L.control.attribution({ position:"bottomright", prefix:false })
 L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",
   { maxNativeZoom:19, maxZoom:21 }).addTo(map);
 
-const netLayer = L.layerGroup().addTo(map);
+const netLayer = L.layerGroup().addTo(map);   // verbindingslijnen van het geopende punt
 const markers = {};
 let actief = null, huidig = null, tab = "verhaal";  // gedeeld: selectie en tabblad
 const filterAan = {};                              // thema -> aan/uit, gevuld bij de chips
@@ -496,9 +511,9 @@ function hertekenen(){
 }
 map.on("zoomend moveend", hertekenen);
 
-// startbeeld: alle punten in beeld, en zodra de locatie er is: waar jij bent
-// (naarLocatie, onderaan). Zonder locatie blijft het overzicht staan. De verkenner
-// zit achter ⌕ linksboven — vooraf verkennen begint dáár, ter plekke begint hier.
+// startbeeld: alle punten in beeld. Naar je eigen omgeving ga je met de knop
+// rechtsonder — niet automatisch, want een kaart die bij het laden zelf
+// wegspringt is verwarrend. De verkenner zit achter ⌕ linksboven.
 map.fitBounds(L.latLngBounds(A.pois.map(p => p.coord)), { padding:[70,90], maxZoom:16 });
 
 /* ---------- tik of ingedrukt houden -----------------------------------
@@ -589,7 +604,6 @@ function verf(){
 }
 
 /* ---------- netwerk ---------- */
-let netAan = false;
 function tekenNet(focus){
   netLayer.clearLayers();
   const gedaan = new Set();
@@ -610,21 +624,16 @@ function tekenNet(focus){
     }).addTo(netLayer);
   }));
 }
-// de verbindingen als lijnen op de kaart, aan of uit. (Een aparte netwerkgraaf
-// is er geweest en bewust weer weggehaald: de kaart, de inline verwijzingen en
-// het tabblad Verbindingen laten hetzelfde web al zien, leesbaarder.)
-const fNet = document.getElementById("fNet");
-fNet.onclick = function(){
-  netAan = !netAan; this.classList.toggle("on", netAan);
-  netAan ? (tekenNet(null), toast("Verbindingen op de kaart")) : netLayer.clearLayers();
-};
+// Er is geen knop meer voor het hele netwerk: te verwarrend, en de kaart, de
+// inline verwijzingen en het tabblad Verbindingen laten hetzelfde al zien. Bij
+// een geopend punt worden zijn eigen verbindingen wél getekend, zie open().
 
 /* ---------- locatie ----------------------------------------------------
-   Twee momenten: wie ergens stáát wil meteen zien wat er om hem heen is; wie
-   thuis zit, zoekt zelf. Daarom haalt de app bij de start stil de locatie op
-   en begint dáár — altijd, ook als er (nog) geen verhalen in de buurt zijn.
-   Ver van alle steden krijg je een hint waar het dichtst is.               */
-let locMarker = null, locHint = false;   // locHint: er is al een locatiemelding getoond
+   Twee momenten: wie ergens stáát wil zien wat er om hem heen is; wie thuis
+   zit, zoekt zelf. Het eerste is één tik op de knop rechtsonder — bewust een
+   handeling, want een kaart die bij het laden zelf wegspringt is verwarrend.
+   Ver van alle steden krijg je een hint welke stad het dichtst is.         */
+let locMarker = null;
 function naarLocatie(stil){
   if (!navigator.geolocation){ if (!stil) toast("Geolocatie niet beschikbaar"); return; }
   if (!stil) toast("Locatie zoeken…");
@@ -637,11 +646,9 @@ function naarLocatie(stil){
         .map(p => [map.distance(c, p.kaart.centrum), p]).sort((a,b) => a[0]-b[0])[0];
       const dichtbij = dichtst && dichtst[0] <= 20000;
       map.setView(c, 15, { animate: !stil });
-      if (!dichtbij && dichtst){
-        locHint = true;
+      if (!dichtbij && dichtst)
         toast("Je bent " + Math.round(dichtst[0]/1000) + " km van " + dichtst[1].naam +
               ", de dichtstbijzijnde stad met verhalen");
-      }
       else if (!stil) toast("Gevonden");
     },
     () => { if (!stil) toast("Locatie geweigerd of niet beschikbaar"); },
@@ -747,7 +754,7 @@ function sluit(){
   paneelSleutel = null;
   document.body.classList.remove("open","max");
   Object.values(markers).forEach(x => x.el.classList.remove("sel"));
-  if (!netAan) netLayer.clearLayers(); else tekenNet(null);
+  netLayer.clearLayers();
   huidig = null;
   hertekenen();
 }
@@ -1036,27 +1043,6 @@ function toonGroep(pois){
   scroll.querySelectorAll("[data-plaats]").forEach(b => b.onclick = () => focusPlaats(b.dataset.plaats));
   scroll.scrollTop = 0;
 }
-
-/* ---------- gebiedsverhalen ---------- */
-document.getElementById("fArea").onclick = () => {
-  toonPaneel("verhalen");
-  Object.values(markers).forEach(x => x.el.classList.remove("sel"));
-  const steden = A.plaatsen.filter(p => A.gebiedsverhalen.some(g => plaatsVan(g) === p.id));
-  scroll.innerHTML =
-    "<h1>Verhalen</h1>" +
-    '<div class="sub">Objecten met te weinig te zién voor een pin — maar met een verhaal dat blijft.</div>' +
-    steden.map(p =>
-      (steden.length > 1 ? '<div class="zkKop">' + esc(p.naam) + "</div>" : "") +
-      '<div class="areas">' + A.gebiedsverhalen.filter(g => plaatsVan(g) === p.id).map(g =>
-        '<div class="area" data-go="' + g.id + '"><b>' + esc(g.naam) + "</b>" +
-        "<span>" + esc(g.glance) + "</span>" +
-        "<em>esthetiek " + g.esthetiek + " · verhaal " + g.verhaal + "</em></div>").join("") + "</div>"
-    ).join("") +
-    '<div class="cap">De routeringsregel: esthetiek bepaalt niet óf iets interessant is, maar op welk niveau het verschijnt.</div>';
-  scroll.querySelectorAll("[data-go]").forEach(b => b.onclick = () => open(b.dataset.go));
-  scroll.querySelectorAll("[data-plaats]").forEach(b => b.onclick = () => focusPlaats(b.dataset.plaats));
-  scroll.scrollTop = 0;
-};
 
 /* ---------- de verkenner ---------------------------------------------------
    De zoeker achter ⌕ linksboven. Er zijn twee momenten om te verkennen:
@@ -1472,8 +1458,7 @@ document.getElementById("brandSub").textContent =
   stedenMetInhoud().map(p => p.naam).join(" · ") + " · proefdata";
 
 fbSpoel();
-naarLocatie(true);
-setTimeout(() => { if (!locHint) toast("Tik op een punt — of zoek een plaats of thema via ⌕ linksboven."); }, 700);
+setTimeout(() => toast("Tik op een punt, zoek via ⌕ linksboven, of ga naar je eigen omgeving met de knop rechtsonder."), 700);
 } // einde start()
 
 const _d = document.createElement("script");
